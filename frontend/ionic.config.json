@@ -1,5 +1,7 @@
 {
   "name": "telepathy-frontend",
-  "integrations": {},
+  "integrations": {
+    "cordova": {}
+  },
   "type": "angular"
 }
