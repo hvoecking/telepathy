@@ -1,0 +1,31 @@
+{
+  "author": "Heye Voecking",
+  "authorName": "Heye Voecking",
+  "bugs": {
+    "url": "https://github.com/hvoecking/telepathy/issues"
+  },
+  "contributors": [
+    "Heye Voecking (https://github.com/hvoecking)"
+  ],
+  "dependencies": {
+    "cordova": "^8.1.2",
+    "ionic": "^4.5.0",
+    "json-to-ts": "1.5.4",
+    "lodash": "4.17.11",
+    "yargs": "12.0.2"
+  },
+  "description": "Transfer data 'telepathically' between devices.",
+  "devDependencies": {},
+  "homepage": "https://telepathy.app",
+  "license": "MIT",
+  "maintainers": [
+    "Heye Voecking (https://github.com/hvoecking)"
+  ],
+  "name": "telepathy-base",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hvoecking/telepathy.git"
+  },
+  "version": "0.1.0"
+}

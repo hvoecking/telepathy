@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+export PATH="/input/frontend/bin:${PATH}"
+export PATH="/input/frontend/node_modules/.bin:${PATH}"
+
+build() (
+  cd "/input/frontend"
+  ionic cordova platform add android
+  ionic cordova build android "${@}"
+
+  mv \
+    platforms/android/app/build/outputs/apk/debug/*.apk \
+    /output/app.apk
+)
+
+main() {
+  if [[ ${NODE_ENV} == development ]]
+  then
+    build --debug --device
+  elif [[ ${NODE_ENV} == test ]]
+  then
+    build #--emulator
+  elif [[ ${NODE_ENV} == production ]]
+  then
+    build --release --prod --device
+  else
+    echo "Unknown NODE_ENV: '${NODE_ENV}', exiting"
+    exit 1
+  fi
+}
+
+main

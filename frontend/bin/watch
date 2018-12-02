@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+shopt -s globstar
+
+while read -r
+do
+  if e2e-chrome
+  then
+    echo "All tests succeeded"
+  else
+    echo "Tests failed"
+  fi
+done  < <(inotifywait -mr -e modify -e attrib ./src ./e2e/**/*)

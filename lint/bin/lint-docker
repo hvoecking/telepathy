@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+typeset -r TMP="${1}"; shift
+
+dockerlint "${TMP}/deps.Dockerfile" "${TMP}/*/Dockerfile"

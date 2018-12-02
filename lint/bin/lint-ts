@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+typeset -r TMP="${1}"; shift
+
+ln -s "${PWD}/node_modules" "${TMP}/frontend/node_modules"
+trap 'rm "${TMP}/frontend/node_modules"' EXIT
+
+tslint -p "${TMP}/frontend/tsconfig.json"

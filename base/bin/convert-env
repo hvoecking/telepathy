@@ -1,0 +1,65 @@
+#!/usr/bin/env node
+
+const _ = require('lodash');
+const fs = require('fs');
+const jsonToTs = require('json-to-ts');
+const yargs = require('yargs');
+
+const OUTPUT_BASH = 'bash';
+const OUTPUT_JS = 'js';
+const OUTPUT_JSON = 'json';
+const OUTPUT_MODEL = 'model';
+const OUTPUT_TS = 'ts';
+
+const argv = yargs
+  .option('file', {
+    default: '.env',
+    describe: 'Path to .env file',
+  })
+  .command([
+    OUTPUT_BASH,
+    OUTPUT_JS,
+    OUTPUT_JSON,
+    OUTPUT_MODEL,
+    OUTPUT_TS,
+  ])
+  .argv;
+
+const env = _(fs.readFileSync(argv.file).toString().split('\n'))
+  .compact()
+  .map(s => s.split(/([^=]+)=(.+)?/).splice(1,2))
+  .keyBy(a => _.camelCase(a[0].substr(3)))
+  .mapValues(1)
+  .sort()
+  .value();
+
+env.versionBuildMode = process.env.NODE_ENV;
+if (!env.versionBuildMode) {
+  throw new Error('Environment variable NODE_ENV is unset');
+}
+
+const WARNING = 'DO NOT MODIFY! This is a generated file!\n';
+
+if (argv._[0] === OUTPUT_MODEL) {
+  console.log(`// ${WARNING}`);
+  console.log(`export ${ _.first(jsonToTs(env, {rootName: 'Environment'}))};`);
+} else if (argv._[0] === OUTPUT_TS) {
+  console.log(`// ${WARNING}`);
+  console.log(`import { Environment } from './environment.model';`);
+  console.log(
+    `export const env: Environment = ${JSON.stringify(env, 2, '  ')};`,
+  );
+} else if (argv._[0] === OUTPUT_JSON) {
+  console.log(JSON.stringify(env, 2, '  '));
+} else if (argv._[0] === OUTPUT_JS) {
+  console.log(`// ${WARNING}`);
+  console.log(`module.exports = ${JSON.stringify(env, 2, '  ')};`);
+} else if (argv._[0] === OUTPUT_BASH) {
+  console.log(`#!bash`);
+  console.log(`# ${WARNING}`);
+  console.log(_.map(env, (value, name) => {
+    return `export ENV_${_.snakeCase(name).toUpperCase()}="${value}"`;
+  }).join("\n"));
+} else {
+  throw new Error('This should never happen');
+}

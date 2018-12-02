@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+typeset -r PROFILE=config/profile
+
+if [[ -t 0 ]]
+then
+  # A pseudo TTY is allocated, assuming interactive shell
+  if [[ -f "${PROFILE}" ]]
+  then
+    source config/profile
+  else
+    echo "File '${PROFILE}' not found!" >&2
+  fi
+
+  "${@}"
+else
+  source config/profile
+
+  if can-sudo
+  then
+    # Make sure everything in home is owned by app
+    recapture-dir "${HOME}" 2>/dev/null || true
+    recapture-dir /output 2>/dev/null || true
+    # Remove the sudoers file to avoid privilge escalation
+    giveup-sudo
+  fi
+
+  typeset -r SCRIPT="${1}"; shift
+  # Keep colors by running the command with script and handle the output
+  script /dev/null -eqc "${SCRIPT} ${*}" | log "${SCRIPT}"
+fi

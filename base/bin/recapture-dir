@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+typeset -r DIR="${1}"; shift
+
+sudo chown "$(whoami)" "$(find "${DIR}" \! -user "$(whoami)" -print)"

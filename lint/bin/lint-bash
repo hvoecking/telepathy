@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+TMP="${1}"; shift
+
+typeset -r PROFILE="config/profile"
+
+# shellcheck disable=SC2046
+shellcheck "${PROFILE}" $(grep '#!/usr/bin/env bash' "${TMP}"/*/bin/* -l)

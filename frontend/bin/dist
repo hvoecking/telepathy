@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+build() (
+  ionic build --platform=browser --engine=browser --no-interactive "${@}"
+
+  mv www/ /output/
+)
+
+main() {
+  if [[ ${NODE_ENV} == development ]]
+  then
+    build
+  elif [[ ${NODE_ENV} == test ]]
+  then
+    build
+  elif [[ ${NODE_ENV} == production ]]
+  then
+    build --prod
+  else
+    echo "Unknown NODE_ENV: '${NODE_ENV}', exiting"
+    exit 1
+  fi
+}
+
+main

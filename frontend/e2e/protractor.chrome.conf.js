@@ -1,21 +1,7 @@
 const fs = require('fs');
 const { SpecReporter } = require('jasmine-spec-reporter');
 
-const env = JSON.parse(fs.readFileSync(process.env.ENV_DIR + '/environment.json'));
-const androidPixel2XLCapability = {
-  'app-activity': 'MainActivity',
-  'app-package': 'io.ionic.starter',
-  //app: '/home/app/telepathy/platforms/android/app/build/outputs/apk/debug/app-debug.apk',
-  app: '/tmp/app-debug.apk',
-  autoAcceptAlerts: 'true',
-  autoGrantPermissions: 'true',
-  autoWebview: true,
-  autoWebviewTimeout: 20000,
-  browserName: '',
-  deviceName: 'unused',
-  newCommandTimeout: 300000,
-  platformName: 'Android',
-};
+const env = JSON.parse(fs.readFileSync('config/environment.json'));
 
 const chromeCapability = {
   browserName: 'chrome',
@@ -58,9 +44,8 @@ exports.config = {
   ],
   seleniumAddress: `http://${env.seleniumHost}:${env.seleniumPort}/wd/hub`,
   directConnect: false,
-  baseUrl: 'http://localhost:8100',
+  baseUrl: `http://localhost:${env.frontendPort}`,
   multiCapabilities: [
-    androidPixel2XLCapability,
     chromeCapability,
   ],
   framework: 'jasmine',
@@ -68,6 +53,13 @@ exports.config = {
     showColors: true,
     defaultTimeoutInterval: 30000,
     print: function() {}
+  },
+  beforeLaunch: function() {
+    console.log('Serving to: ', env.frontendPort, env.frontendListen)
+    require('connect')().use(require('serve-static')('/output/www')).listen(
+      env.frontendPort,
+      env.frontendListen,
+    );
   },
   onPrepare() {
     require('ts-node').register({

@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+COMPONENT="${1}"; shift
+TARGET="${1}"; shift
+
+#   --cache-from "telepathy/${COMPONENT}.${TARGET}:latest"
+
+docker build \
+  -t "telepathy/${COMPONENT}.${TARGET}" \
+  --target "${TARGET}" \
+  --build-arg NODE_ENV="${NODE_ENV}" \
+  --build-arg ENV_CONTENT="$(cat "${PROJECT_ROOT}/.env")" \
+  --build-arg HOST_GID="$(id -g)" \
+  --build-arg HOST_UID="$(id -u)" \
+  "${@}" \
+  "${PROJECT_ROOT}/${COMPONENT}"
