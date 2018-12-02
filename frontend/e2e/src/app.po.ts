@@ -1,8 +1,13 @@
 import { browser, by, element } from 'protractor';
 
 export class AppPage {
-  navigateTo(destination) {
-    return browser.get(destination);
+  async navigateTo(destination: string) {
+    const cap = await browser.getCapabilities();
+    const browserName = cap.get('browserName');
+    if (browserName === '') {
+      return;
+    }
+    await browser.get(destination);
   }
 
   getTitle() {
