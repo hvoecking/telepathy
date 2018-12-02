@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+typeset -r TMP=$(mktemp -d)
+trap 'rm -rf "${TMP}"' EXIT
+
+cd "${TMP}"
+curl \
+ -fSLk \
+ "https://dl.google.com/android/repository/sdk-tools-linux-${ANDROID_SDK_VERSION}.zip" \
+ -o "sdk-tools-linux-${ANDROID_SDK_VERSION}.zip"
+
+unzip "sdk-tools-linux-${ANDROID_SDK_VERSION}.zip"
+mv tools "${ANDROID_HOME}/tools"
+export PATH="${ANDROID_HOME}/tools/bin/:${PATH}"
+
+(while sleep 3; do echo "y"; done) | sdkmanager --licenses || [[ ${?} == 141 ]]
+sdkmanager "platform-tools"
+sdkmanager "build-tools;${ANDROID_BUILD_TOOLS_VERSION}"

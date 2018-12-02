@@ -1,0 +1,37 @@
+{
+  "author": "Heye Voecking",
+  "authorName": "Heye Voecking",
+  "bugs": {
+    "url": "https://github.com/hvoecking/telepathy/issues"
+  },
+  "contributors": [
+    "Heye Voecking (https://github.com/hvoecking)"
+  ],
+  "dependencies": {
+    "@angular/compiler": "^7.1.2",
+    "@angular/core": "^7.1.2",
+    "codelyzer": "^4.5.0",
+    "dockerlint": "^0.3.9",
+    "rxjs": "^6.3.3",
+    "ts": "^0.2.2",
+    "tslint": "^5.11.0",
+    "typescript": "^3.2.2"
+  },
+  "description": "Transfer data 'telepathically' between devices.",
+  "devDependencies": {
+    "@commitlint/cli": "^7.2.1",
+    "@commitlint/config-conventional": "^7.1.2"
+  },
+  "homepage": "https://telepathy.app",
+  "license": "MIT",
+  "maintainers": [
+    "Heye Voecking (https://github.com/hvoecking)"
+  ],
+  "name": "telepathy-lint",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hvoecking/telepathy.git"
+  },
+  "version": "0.0.0"
+}

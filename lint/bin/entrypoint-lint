@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+typeset -r LINT_SCRIPT="${1}"
+
+TMP=$(mktemp -d)
+trap 'rm -rf "${TMP}"' EXIT
+
+git archive HEAD | tar xC "${TMP}"
+
+entrypoint-base "${LINT_SCRIPT}" "${TMP}"

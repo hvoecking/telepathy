@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+TMP="${1}"; shift
+
+for LINT_SCRIPT in $(dirname "${0}")/lint-*
+do
+  if [[ "${LINT_SCRIPT}" == "${0}" ]]
+  then
+    continue
+  fi
+  "${LINT_SCRIPT}" "${TMP}"
+done

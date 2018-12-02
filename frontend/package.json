@@ -83,13 +83,5 @@
     "type": "git",
     "url": "https://github.com/hvoecking/telepathy.git"
   },
-  "scripts": {
-    "build": "ng build",
-    "e2e": "ng e2e",
-    "lint": "ng lint",
-    "ng": "ng",
-    "start": "ng serve",
-    "test": "ng test"
-  },
   "version": "0.0.0"
 }

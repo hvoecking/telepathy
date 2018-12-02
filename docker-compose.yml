@@ -1,0 +1,105 @@
+version: '3.4'
+services:
+
+  android:
+    command: dist
+    image: telepathy/android.setup
+    privileged: true
+    volumes:
+      - '${PROJECT_ROOT}/frontend:/input/frontend'
+      - '${PROJECT_ROOT}/output/android:/output'
+      - '${PROJECT_ROOT}/android/platforms:${ENV_DOCKER_USER_HOME}/android-sdk/platforms/'
+      - '${PROJECT_ROOT}/android/.gradle:${ENV_DOCKER_USER_HOME}/.gradle/'
+      - '${PROJECT_ROOT}/android/.android:${ENV_DOCKER_USER_HOME}/.android/'
+      - '/dev/bus/usb:/dev/bus/usb'
+
+  appium:
+    image: telepathy/appium.files
+    depends_on:
+      - selenium-hub
+    environment:
+      APPIUM: 'true'
+      APPIUM_HOST: '${ENV_APPIUM_HOST}'
+      APPIUM_PORT: '${ENV_APPIUM_PORT}'
+      CONNECT_TO_GRID: 'true'
+      DEVICE: Samsung Galaxy S6
+      MOBILE_WEB_TEST: 'true'
+      SELENIUM_HOST: '${ENV_SELENIUM_HOST}'
+      SELENIUM_PORT: '${ENV_SELENIUM_PORT}'
+    networks:
+      default:
+        aliases:
+          - '${ENV_APPIUM_HOST}'
+    ports:
+      - '${ENV_APPIUM_PORT}:${ENV_APPIUM_PORT}'
+      - '6080:6080'
+      - '5554:5554'
+      - '5555:5555'
+    privileged: true
+
+  chrome-debug:
+    image: telepathy/chrome-debug.setup
+    depends_on:
+      - selenium-hub
+    environment:
+      ENV_FRONTEND_HOST: '${ENV_FRONTEND_HOST}'
+      ENV_FRONTEND_PORT: '${ENV_FRONTEND_PORT}'
+      HUB_PORT_4444_TCP_ADDR: '${ENV_SELENIUM_HOST}'
+      HUB_PORT_4444_TCP_PORT: '${ENV_SELENIUM_PORT}'
+    ports:
+      - '5900:5900'
+
+  ci:
+    command: ci
+    depends_on:
+      - chrome-debug
+      - appium
+    image: telepathy/frontend.dist
+    ports:
+      - '${ENV_FRONTEND_PORT}:${ENV_FRONTEND_PORT}'
+    networks:
+      default:
+        aliases:
+          - '${ENV_FRONTEND_HOST}'
+
+  lint:
+    command: cat
+    image: telepathy/lint.setup
+    volumes:
+      - '${PWD}/lint:${ENV_DOCKER_PROJECT_ROOT}'
+      - '${PWD}/.git:${ENV_DOCKER_PROJECT_ROOT}/.git'
+
+  selenium-hub:
+    environment:
+      GRID_TIMEOUT: 10000
+    hostname: '${ENV_SELENIUM_HOST}'
+    image: selenium/hub:3.141.59-antimony
+    ports:
+      - '${ENV_SELENIUM_PORT}:${ENV_SELENIUM_PORT}'
+    networks:
+      default:
+        aliases:
+          - '${ENV_SELENIUM_HOST}'
+
+  serve:
+    command: serve
+    image: telepathy/frontend.setup
+    ports:
+      - '${ENV_FRONTEND_LAB_PORT}:${ENV_FRONTEND_LAB_PORT}'
+      - '${ENV_FRONTEND_PORT}:${ENV_FRONTEND_PORT}'
+      - '${ENV_FRONTEND_LIVERELOAD_PORT}:${ENV_FRONTEND_LIVERELOAD_PORT}'
+    networks:
+      default:
+        aliases:
+          - '${ENV_FRONTEND_HOST}'
+    volumes:
+      - '${PROJECT_ROOT}/frontend:${ENV_DOCKER_PROJECT_ROOT}/'
+
+  watch:
+    command: watch
+    depends_on:
+      - chrome-debug
+      - serve
+    image: telepathy/frontend.setup
+    volumes:
+      - '${PROJECT_ROOT}/frontend:${ENV_DOCKER_PROJECT_ROOT}/'

@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+(sleep 120; kill $$) &
+trap 'exit "${WAITING}"' EXIT
+# Fixme: the android emulator fails on the first execution therefore we restart it if it fails for now
+WAITING=1
+while ! protractor e2e/protractor.android.conf.js --logLevel DEBUG
+do
+  sleep 1
+done
+WAITING=0

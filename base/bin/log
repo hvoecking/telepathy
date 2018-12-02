@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+typeset -r NAME="${1}"; shift
+typeset -r PREFIX=$(printf '%-15s' "${NAME}")
+
+export LOGS="${PROJECT_ROOT:-${DOCKER_PROJECT_ROOT}}/.logs"
+mkdir -p "${LOGS}"
+rm "${LOGS}/*.log" 2>/dev/null || true
+
+no_buffer() {
+  stdbuf -oL -eL "${@}"
+}
+
+strip_color() {
+  no_buffer sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g"
+}
+
+add_prefix() {
+  no_buffer /usr/bin/ts "${PREFIX} [%Y-%m-%d %H:%M:%S]"
+}
+
+log_to_file() {
+  no_buffer tee >(strip_color >>"${LOGS}/${NAME}.log")
+}
+
+add_prefix | log_to_file

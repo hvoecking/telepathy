@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+ionic serve \
+    --no-open \
+    --no-interactive \
+    --port "${ENV_FRONTEND_PORT}" \
+    --address "${ENV_FRONTEND_LISTEN}" \
+    --lab \
+    --lab-port "${ENV_FRONTEND_LAB_PORT}" \
+    --lab-host "${ENV_FRONTEND_LISTEN}" \
+    -c \
+    "${CONNECT_AUTO}" \
+    | tee >(stdbuf -oL -eL grep 'Compiled successfully' | while read -r; do touch src/; done)
