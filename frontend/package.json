@@ -69,12 +69,7 @@
   "name": "telepathy-frontend",
   "private": true,
   "scripts": {
-    "build": "ng build",
-    "e2e": "ng e2e",
-    "lint": "ng lint",
-    "ng": "ng",
-    "start": "ng serve",
-    "test": "ng test"
+    "lint": "ng lint"
   },
   "version": "0.0.1"
 }
