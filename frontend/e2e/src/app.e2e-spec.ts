@@ -1,19 +1,22 @@
-import { AppPage } from './app.po';
+/*!
+ * Copyright 2018
+ */
 
-describe('new App', () => {
+import { AppPage } from "./app.po";
+
+describe("new App", () => {
   let page: AppPage;
 
   beforeEach(() => {
     page = new AppPage();
   });
-  describe('default screen', () => {
+  describe("default screen", () => {
     beforeEach(async () => {
-      await page.navigateTo('/#home');
+      await page.navigateTo("/#home");
     });
-    it('should have a title saying Home', () => {
-      page.getPageOneTitleText().then(title => {
-        expect(title).toEqual('Home');
-      });
+    it("should have a title saying Home", async () => {
+      const title = await page.getPageOneTitleText();
+      await expect(title).toEqual("Home");
     });
   });
 });
