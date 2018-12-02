@@ -74,6 +74,7 @@
     "no-input-rename": true,
     "no-misused-new": true,
     "no-non-null-assertion": true,
+    "no-null-keyword": true,
     "no-output-on-prefix": true,
     "no-output-rename": true,
     "no-shadowed-variable": true,
