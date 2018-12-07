@@ -1,0 +1,23 @@
+{
+  "author": "Heye Voecking",
+  "authorName": "Heye Voecking",
+  "bugs": {
+    "url": "https://github.com/hvoecking/telepathy/issues"
+  },
+  "contributors": [
+    "Heye Voecking (https://github.com/hvoecking)"
+  ],
+  "description": "Transfer data 'telepathically' between devices.",
+  "homepage": "https://telepathy.app",
+  "license": "MIT",
+  "maintainers": [
+    "Heye Voecking (https://github.com/hvoecking)"
+  ],
+  "name": "telepathy",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hvoecking/telepathy.git"
+  },
+  "version": "0.0.0"
+}
