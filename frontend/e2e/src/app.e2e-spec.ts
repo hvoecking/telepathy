@@ -8,7 +8,7 @@ describe('new App', () => {
   });
   describe('default screen', () => {
     beforeEach(async () => {
-      await page.navigateTo('/home');
+      await page.navigateTo('/#home');
     });
     it('should have a title saying Home', () => {
       page.getPageOneTitleText().then(title => {
