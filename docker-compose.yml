@@ -95,6 +95,18 @@ services:
     volumes:
       - '${PROJECT_ROOT}/frontend:${ENV_DOCKER_PROJECT_ROOT}/'
 
+  travis:
+    command: travis
+    depends_on:
+      - chrome-debug
+    image: telepathy/frontend.dist
+    ports:
+      - '${ENV_FRONTEND_PORT}:${ENV_FRONTEND_PORT}'
+    networks:
+      default:
+        aliases:
+          - '${ENV_FRONTEND_HOST}'
+
   watch:
     command: watch
     depends_on:
