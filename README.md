@@ -9,6 +9,9 @@
 
 <h4 align="center">Transfer data 'telepathically' between devices.</h4>
 
+<p align="center">
+  <a href="https://travis-ci.org/hvoecking/telepathy"><img src="https://travis-ci.org/hvoecking/telepathy.svg?branch=master" alt="travis"></a>
+</p>
 <br>
 
 This is a work in progress, as of now (v0.1.0) only the project structure and CI are setup.

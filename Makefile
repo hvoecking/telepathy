@@ -34,6 +34,11 @@ default:
 	#docker cp telepathy/frontend.dist
 	$(MAKE) -f android/build.Makefile dist
 
+.PHONY: travis
+travis: down files-lint build-chrome-debug
+	$(MAKE) -f frontend/build.Makefile dist
+	docker-compose run -T --service-ports --use-aliases travis
+
 .PHONY: test
 test: down files-lint build-chrome-debug
 	$(MAKE) -f appium/build.Makefile files

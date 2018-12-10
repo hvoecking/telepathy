@@ -1,0 +1,44 @@
+addons:
+  apt:
+    packages:
+      - docker-ce
+env:
+  global:
+    - NODE_ENV="test"
+    - PROJECT_ROOT="${TRAVIS_BUILD_DIR}"
+    - DOCKER_COMPOSE_VERSION=1.21.2
+    - DOCKER_CACHE_IMAGES="base.build chrome-debug.setup frontend.deps frontend.setup"
+before_install:
+  - |
+    sudo rm /usr/local/bin/docker-compose
+    curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+    chmod +x docker-compose
+    sudo mv docker-compose /usr/local/bin
+  - |
+    for IMAGE in ${DOCKER_CACHE_IMAGES}
+    do
+      LOCAL_IMAGE="telepathy/${IMAGE}"
+      REMOTE_IMAGE="heye/telepathy.${IMAGE}"
+      if ! docker pull "${REMOTE_IMAGE}:latest"
+      then
+        continue
+      fi
+      docker tag "${REMOTE_IMAGE}:latest" "${LOCAL_IMAGE}:latest"
+    done
+language: bash
+services:
+  - docker
+script: make travis
+after_script:
+  - |
+    echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
+    for IMAGE in ${DOCKER_CACHE_IMAGES}
+    do
+      LOCAL_IMAGE="telepathy/${IMAGE}"
+      REMOTE_IMAGE="heye/telepathy.${IMAGE}"
+      if ! docker tag "${LOCAL_IMAGE}:latest" "${REMOTE_IMAGE}:latest"
+      then
+        continue
+      fi
+      docker push "${REMOTE_IMAGE}:latest"
+    done
