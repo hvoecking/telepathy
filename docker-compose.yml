@@ -62,6 +62,23 @@ services:
         aliases:
           - '${ENV_FRONTEND_HOST}'
 
+  ipfs:
+    command: serve
+    container_name: ipfs
+    hostname: ipfs
+    image: telepathy/ipfs.dist:latest
+    networks:
+      default:
+        aliases:
+          - "${ENV_IPFS_HOST}"
+    ports:
+      - "${ENV_IPFS_API_PORT}:${ENV_IPFS_API_PORT}"
+      - "${ENV_IPFS_GATEWAY_PORT}:${ENV_IPFS_GATEWAY_PORT}"
+      - "${ENV_IPFS_TCP_PORT}:${ENV_IPFS_TCP_PORT}"
+      - "${ENV_IPFS_WEBSOCKET_PORT}:${ENV_IPFS_WEBSOCKET_PORT}"
+    volumes:
+      - "${PROJECT_ROOT}/ipfs:${ENV_DOCKER_PROJECT_ROOT}/"
+
   lint:
     command: cat
     image: telepathy/lint.setup
@@ -83,6 +100,8 @@ services:
 
   serve:
     command: serve
+    depends_on:
+      - ipfs
     image: telepathy/frontend.setup
     ports:
       - '${ENV_FRONTEND_LAB_PORT}:${ENV_FRONTEND_LAB_PORT}'

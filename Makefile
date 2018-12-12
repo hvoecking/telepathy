@@ -47,10 +47,14 @@ test: down files-lint build-chrome-debug
 	docker-compose run -T --service-ports --use-aliases ci
 
 .PHONY: watch
-watch: down build-chrome-debug
+watch: down build-chrome-debug build-ipfs
 	$(MAKE) -f frontend/build.Makefile setup
 	docker-compose up watch
 
 .PHONY: build-chrome-debug
 build-chrome-debug:
 	$(MAKE) -f chrome-debug/build.Makefile setup
+
+.PHONY: build-ipfs
+build-ipfs:
+	$(MAKE) -f ipfs/build.Makefile dist
