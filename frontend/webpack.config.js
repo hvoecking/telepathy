@@ -12,4 +12,12 @@ module.exports = {
     },
     extensions: ['.ts', '.js'],
   },
+  node: {
+    crypto: true,
+    http: true,
+    https: true,
+    os: true,
+    vm: true,
+    stream: true,
+  },
 };
