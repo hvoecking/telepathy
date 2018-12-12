@@ -1,0 +1,70 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Edit Room</ion-title>
+    <ion-buttons slot="start">
+      <ion-button
+        (click)="goBack()"
+        fill="clear"
+      >
+        <ion-icon name="arrow-left" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button
+        (click)="removeRoom(room.id)"
+        *ngIf="room$ | async as room"
+        class="e2e-delete"
+        fill="clear"
+      >
+        <ion-icon name="trash" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content padding>
+  <div
+    *ngIf="error$ | async as emsg"
+    class="error"
+  >
+    {{emsg}}
+  </div>
+  <div class="detail-container">
+    <ion-spinner
+      *ngIf="loading$ | async; else detail"
+      color="accent"
+      mode="indeterminate"
+    ></ion-spinner>
+    <ng-template #detail>
+      <div
+        *ngIf="room$ | async as room"
+      >
+        <form
+          (submit)="saveRoom(room.id, form.value)"
+          [formGroup]="form"
+        >
+          <ion-item>
+            <ion-label color="primary" position="floating">Name</ion-label>
+            <ion-input
+              (keyup.enter)="saveRoom(room.id, form.value)"
+              (keyup.esc)="goBack()"
+              autofocus="true"
+              class="e2e-name"
+              formControlName="name"
+              required
+              type="text"
+            ></ion-input>
+          </ion-item>
+          <ion-button
+            [disabled]="form.pristine || form.invalid"
+            class="submit-btn e2e-save"
+            float-end
+            type="submit"
+          >
+            Save
+          </ion-button>
+        </form>
+      </div>
+    </ng-template>
+  </div>
+</ion-content>

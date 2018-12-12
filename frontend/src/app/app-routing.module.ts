@@ -23,6 +23,22 @@ const routes: Routes = [
     loadChildren: `./pages/list.module#ListPageModule`,
     path: `list`,
   },
+  {
+    loadChildren: `./pages/connect-peer.module#ConnectPeerPageModule`,
+    path: `connect-peer`,
+  },
+  {
+    loadChildren: `./pages/create-room.module#CreateRoomPageModule`,
+    path: `create-room`,
+  },
+  {
+    loadChildren: `./pages/edit-room.module#EditRoomPageModule`,
+    path: `edit-room/:id`,
+  },
+  {
+    loadChildren: `./pages/rooms.module#RoomsPageModule`,
+    path: `rooms`,
+  },
 ];
 
 @NgModule({

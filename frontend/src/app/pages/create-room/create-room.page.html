@@ -1,0 +1,57 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Create Room</ion-title>
+    <ion-buttons slot="start">
+      <ion-button
+        (click)="goBack()"
+        fill="clear"
+      >
+        <ion-icon name="arrow-left" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button
+        (click)="goBack()"
+        fill="clear"
+      >
+        <ion-icon name="close" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content padding>
+  <div
+    *ngIf="error$ | async as emsg"
+    class="error"
+  >
+    {{emsg}}
+  </div>
+  <div class="detail-container">
+    <form
+      (submit)="createRoom(form.value)"
+      [formGroup]="form"
+    >
+      <ion-item>
+        <ion-label color="primary" position="floating">Name</ion-label>
+        <ion-input
+          (keyup.enter)="createRoom(form.value)"
+          (keyup.esc)="goBack()"
+          autofocus="true"
+          class="e2e-name"
+          formControlName="name"
+          required
+          type="text"
+        ></ion-input>
+      </ion-item>
+      <ion-button
+        [disabled]="form.pristine || form.invalid"
+        class="submit-btn e2e-create"
+        float-end
+        type="submit"
+      >
+        Create
+      </ion-button>
+    </form>
+  </div>
+</ion-content>
