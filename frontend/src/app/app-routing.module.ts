@@ -7,17 +7,21 @@ import { Routes, RouterModule } from "@angular/router";
 
 const routes: Routes = [
   {
-    path: "",
-    pathMatch: "full",
-    redirectTo: "home",
+    path: ``,
+    pathMatch: `full`,
+    redirectTo: `splash`,
   },
   {
-    loadChildren: "./pages/home/home.module#HomePageModule",
-    path: "home",
+    loadChildren: `./pages/splash.module#SplashPageModule`,
+    path: `splash`,
   },
   {
-    loadChildren: "./pages/list/list.module#ListPageModule",
-    path: "list",
+    loadChildren: `./pages/home.module#HomePageModule`,
+    path: `home`,
+  },
+  {
+    loadChildren: `./pages/list.module#ListPageModule`,
+    path: `list`,
   },
 ];
 

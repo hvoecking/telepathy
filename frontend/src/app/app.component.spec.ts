@@ -4,33 +4,39 @@
 
 import { CUSTOM_ELEMENTS_SCHEMA } from "@angular/core";
 import { TestBed, async } from "@angular/core/testing";
-
 import { RouterTestingModule } from "@angular/router/testing";
-import { SplashScreen } from "@ionic-native/splash-screen/ngx";
 import { StatusBar } from "@ionic-native/status-bar/ngx";
 import { Platform } from "@ionic/angular";
-
-import { AppComponent } from "./app.component";
+import { AppComponent } from "~app/app.component";
 
 describe("AppComponent", () => {
-  let statusBarSpy: {styleDefault: {}};
-  let splashScreenSpy: {hide: {}};
+  let statusBarSpy: {
+    styleDefault: {};
+  };
   let platformReadySpy: Promise<void>;
-  let platformSpy: {ready: {}};
+  let platformSpy: {
+    ready: {};
+  };
 
   beforeEach(async(() => {
-    statusBarSpy = jasmine.createSpyObj("StatusBar", ["styleDefault"]);
-    splashScreenSpy = jasmine.createSpyObj("SplashScreen", ["hide"]);
+    statusBarSpy = jasmine.createSpyObj(`StatusBar`, [`styleDefault`]);
     platformReadySpy = Promise.resolve();
-    platformSpy = jasmine.createSpyObj("Platform", {ready: platformReadySpy});
+    platformSpy = jasmine.createSpyObj("Platform", {
+      ready: platformReadySpy,
+    });
 
     TestBed.configureTestingModule({
       declarations: [AppComponent],
       imports: [RouterTestingModule.withRoutes([])],
       providers: [
-        {provide: StatusBar, useValue: statusBarSpy},
-        {provide: SplashScreen, useValue: splashScreenSpy},
-        {provide: Platform, useValue: platformSpy},
+        {
+          provide: StatusBar,
+          useValue: statusBarSpy,
+        },
+        {
+          provide: Platform,
+          useValue: platformSpy,
+        },
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
     }).compileComponents();
@@ -47,7 +53,6 @@ describe("AppComponent", () => {
     expect(platformSpy.ready).toHaveBeenCalled();
     await platformReadySpy;
     expect(statusBarSpy.styleDefault).toHaveBeenCalled();
-    expect(splashScreenSpy.hide).toHaveBeenCalled();
   });
 
   it("should have menu labels", async () => {
