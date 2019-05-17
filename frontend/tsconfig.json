@@ -12,18 +12,26 @@
     "noUnusedLocals": true,
     "outDir": "./dist/out-tsc",
     "paths": {
+      "*": ["types/*"],
       "~app/*": ["src/app/*"],
       "~assets/*": ["src/assets/*"],
       "~env": ["config/environment"],
       "~pages/*": ["src/app/pages/*"],
       "~services/*": ["src/app/services/*"],
-      "~store/*": ["src/app/store/*"],
+      "~store/*": ["src/app/store/*"]
     },
+    "plugins": [
+      {
+        "name": "typescript-tslint-plugin",
+        "configFile": "tslint.json"
+      }
+    ],
     "sourceMap": true,
     "strict": true,
     "target": "es5",
     "typeRoots": [
       "node_modules/@types",
+      "node_modules/typestub-ipfs",
       "types"
     ],
     "lib": [

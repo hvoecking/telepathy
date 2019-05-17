@@ -1,22 +1,25 @@
-import * as _ from 'lodash';
-import { ApplicationRef } from '@angular/core';
-import { Component } from '@angular/core';
-import { FormBuilder } from '@angular/forms';
-import { FormControl } from '@angular/forms';
-import { FormGroup } from '@angular/forms';
-import { IpfsService } from '@services/ipfs.service';
-import { Router } from '@angular/router';
-import { Validators } from '@angular/forms';
+/**
+ * @license
+ * Heye Vöcking All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://telepathy.app/license
+ */
+
+import { ApplicationRef, Component } from "@angular/core";
+import { FormBuilder, FormControl, FormGroup, Validators } from "@angular/forms";
+import { Router } from "@angular/router";
+import { IpfsService } from "~services/ipfs.service";
 
 @Component({
-  selector: 'app-connect-peer',
-  styleUrls: ['./connect-peer.page.scss'],
-  templateUrl: './connect-peer.page.html',
+  selector: `app-connect-peer`,
+  styleUrls: [`./connect-peer.page.scss`],
+  templateUrl: `./connect-peer.page.html`,
 })
 export class ConnectPeerPage {
 
   public readonly form: FormGroup = this.formBuilder.group({
-    peerAddress: new FormControl('', Validators.required),
+    peerAddress: new FormControl(``, Validators.required),
   });
 
   constructor(
@@ -26,20 +29,20 @@ export class ConnectPeerPage {
     private readonly router: Router,
   ) { }
 
-  ionViewWillEnter() {
+  public async connectPeer(result: { peerAddress: string }): Promise<void> {
+    const { dirty, valid }: FormGroup = this.form;
+    if (dirty && valid) {
+      await this.ipfsService.connect(`/p2p-circuit/ipfs/${result.peerAddress}`);
+      this.form.reset();
+      await this.goBack();
+    }
+  }
+
+  protected ionViewWillEnter(): void {
     this.app.tick();
   }
 
-  goBack() {
-    this.router.navigate(['/rooms']);
-  }
-
-  connectPeer(result) {
-    const { dirty, valid } = this.form;
-    if (dirty && valid) {
-      this.ipfsService.connect('/p2p-circuit/ipfs/' + result.peerAddress);
-      this.form.reset();
-      this.goBack();
-    }
+  private async goBack(): Promise<void> {
+    await this.router.navigate([`/rooms`]);
   }
 }

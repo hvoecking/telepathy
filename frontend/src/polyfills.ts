@@ -1,5 +1,9 @@
-/*!
- * Copyright 2018
+/**
+ * @license
+ * Heye Vöcking All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://telepathy.app/license
  */
 
 /**
@@ -76,7 +80,7 @@
 // disable patch specified eventNames
 // (window as any).__zone_symbol__BLACK_LISTED_EVENTS = ['scroll', 'mousemove'];
 
-/*
+/**
  * in IE/Edge developer tools, the addEventListener will also be wrapped by
  * zone.js with the following flag, it will bypass `zone.js` patch for IE/Edge
  */

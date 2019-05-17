@@ -1,11 +1,19 @@
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { IonicModule } from '@ionic/angular';
-import { NgModule } from '@angular/core';
-import { ReactiveFormsModule } from '@angular/forms';
-import { RoomService } from '@services/room.service';
-import { RoomsPage } from '@pages/rooms/rooms.page';
-import { RouterModule } from '@angular/router';
+/**
+ * @license
+ * Heye Vöcking All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://telepathy.app/license
+ */
+
+import { CommonModule } from "@angular/common";
+import { NgModule } from "@angular/core";
+import { FormsModule } from "@angular/forms";
+import { ReactiveFormsModule } from "@angular/forms";
+import { RouterModule } from "@angular/router";
+import { IonicModule } from "@ionic/angular";
+import { RoomsPage } from "~pages/rooms/rooms.page";
+import { RoomService } from "~services/room.service";
 
 @NgModule({
   declarations: [
@@ -17,8 +25,8 @@ import { RouterModule } from '@angular/router';
     IonicModule,
     ReactiveFormsModule,
     RouterModule.forChild([{
-      path: '',
       component: RoomsPage,
+      path: ``,
     }]),
   ],
   providers: [

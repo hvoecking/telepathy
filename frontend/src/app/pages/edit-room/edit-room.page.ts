@@ -1,38 +1,33 @@
-import { ActivatedRoute } from '@angular/router';
-import { combineLatest } from 'rxjs';
-import { Component } from '@angular/core';
-import { delay } from 'rxjs/operators';
-import { EntityOp } from 'ngrx-data';
-import { filter } from 'rxjs/operators';
-import { FormBuilder } from '@angular/forms';
-import { FormControl } from '@angular/forms';
-import { FormGroup } from '@angular/forms';
-import { map } from 'rxjs/operators';
-import { Observable } from 'rxjs';
-import { ofEntityOp } from 'ngrx-data';
-import { Room } from '@services/room.service';
-import { RoomService } from '@services/room.service';
-import { Router } from '@angular/router';
-import { shareReplay } from 'rxjs/operators';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
-import { Validators } from '@angular/forms';
+/**
+ * @license
+ * Heye Vöcking All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://telepathy.app/license
+ */
+
+import { Component } from "@angular/core";
+import { FormBuilder, FormControl, FormGroup, Validators } from "@angular/forms";
+import { ActivatedRoute, ParamMap, Router } from "@angular/router";
+import { EntityAction, EntityOp, ofEntityOp } from "ngrx-data";
+import { combineLatest, Observable, Subject } from "rxjs";
+import { delay, filter, map, shareReplay, takeUntil } from "rxjs/operators";
+import { Room, RoomService } from "~services/room.service";
 
 @Component({
-  selector: 'edit-room',
-  styleUrls: ['./edit-room.page.scss'],
-  templateUrl: './edit-room.page.html',
+  selector: `edit-room`,
+  styleUrls: [`./edit-room.page.scss`],
+  templateUrl: `./edit-room.page.html`,
 })
 export class EditRoomPage {
 
-  public readonly loading$ = this.roomService.zonedLoading$.pipe(
+  public readonly error$: Subject<string> = new Subject<string>();
+  public form: FormGroup = this.formBuilder.group({});
+
+  public readonly loading$: Observable<boolean> = this.roomService.zonedLoading$.pipe(
     delay(1),
   );
-  public error$: Observable<string>;
-  public form: FormGroup;
-  public room$: Observable<Room>;
-
-  private readonly destroy$ = new Subject();
+  public readonly room$: Subject<Room> = new Subject<Room>();
 
   constructor(
     private readonly formBuilder: FormBuilder,
@@ -41,59 +36,68 @@ export class EditRoomPage {
     private readonly router: Router,
   ) { }
 
-  ionViewWillEnter() {
-    this.room$ = combineLatest(
-      this.route.paramMap.pipe(map(paramMap => paramMap.get('id'))),
+  private readonly destroy$: Subject<void> = new Subject<void>();
+
+  public async goBack(): Promise<void> {
+    await this.router.navigate([`/rooms`]);
+  }
+
+  public async removeRoom(id: string): Promise<void> {
+    this.roomService.delete(id);
+    await this.goBack();
+  }
+
+  public async saveRoom(id: string, value: Partial<Room>): Promise<void> {
+    const { dirty, valid }: FormGroup = this.form;
+    if (dirty && valid) {
+      const newValues = {
+        id,
+        name: value.name,
+      };
+      this.roomService.update(newValues);
+      await this.goBack();
+    }
+  }
+
+  protected ionViewWillEnter(): void {
+    this.room$.subscribe((room: Room) => {
+      this.form.addControl(`name`, new FormControl(room.name, Validators.required));
+    });
+    combineLatest(
+      this.route.paramMap.pipe(
+        map((paramMap: ParamMap) => paramMap.get(`id`)),
+      ),
       this.roomService.entityMap$,
     ).pipe(
-      map(([id, entityMap]) => {
+      map(([id, entityMap]: [string | null, {[key: string]: Room | undefined}]): Room | undefined => {
+        if (id === null) {
+          return undefined;
+        }
         const room = entityMap[id];
-        if (!room) {
+        if (room === undefined) {
           this.roomService.getByKey(id);
         }
         return room;
       }),
-      filter(room => !!room),
+      filter((room: Room | undefined) => room !== undefined),
       takeUntil(this.destroy$), // must be just before shareReplay
       shareReplay(1),
-    );
-    this.room$.subscribe(room => {
-      this.form = this.formBuilder.group({
-        name: new FormControl(room.name, Validators.required),
-      });
-    });
+    ).subscribe(this.room$);
 
-    this.error$ = this.roomService.errors$.pipe(
+    this.roomService.errors$.pipe(
       ofEntityOp(EntityOp.QUERY_BY_KEY_ERROR),
-      map(errorAction => errorAction.payload.error.message),
+      map(({ payload: { error } }: EntityAction) => (
+        error !== undefined
+          ? error.message
+          : `Unknown error`
+      )),
       // delay guards against `ExpressionChangedAfterItHasBeenCheckedError`
       delay(1),
       takeUntil(this.destroy$),
-    );
+    ).subscribe(this.error$);
   }
 
-  ionViewWillLeave() {
+  protected ionViewWillLeave(): void {
     this.destroy$.next();
-  }
-
-  goBack() {
-    this.router.navigate(['/rooms']);
-  }
-
-  async saveRoom(id, value) {
-    const { dirty, valid } = this.form;
-    if (dirty && valid) {
-      let newValues = {
-        id: id,
-        name: value.name,
-      }
-      this.roomService.update(newValues);
-      this.goBack();
-    }
-  }
-
-  removeRoom(id) {
-    this.roomService.delete(id);
-    this.goBack();
   }
 }

@@ -1,63 +1,42 @@
-import * as _ from 'lodash';
-import * as OrbitDB from 'orbit-db';
-import * as uuid from 'uuid';
-import { catchError } from 'rxjs/operators';
-import { combineLatest } from 'rxjs';
-import { delay } from 'rxjs/operators';
-import { EntityCollectionDataService } from 'ngrx-data';
-import { EntityCollectionServiceBase } from 'ngrx-data';
-import { filter } from 'rxjs/operators';
-import { first } from 'rxjs/operators';
-import { flatMap } from 'rxjs/operators';
-import { from } from 'rxjs';
-import { fromEvent } from 'rxjs';
-import { Injectable } from '@angular/core';
-import { IpfsService } from '@services/ipfs.service';
-import { map } from 'rxjs/operators';
-import { mapTo } from 'rxjs/operators';
-import { merge } from 'rxjs';
-import { Observable } from 'rxjs';
-import { of } from 'rxjs';
-import { Optional } from '@angular/core';
-import { OrbitdbDataServiceConfig } from '@store/orbitdb-data-service-config';
-import { QueryParams } from 'ngrx-data';
-import { shareReplay } from 'rxjs/operators';
-import { Subject } from 'rxjs';
-import { tap } from 'rxjs/operators';
-import { throwError } from 'rxjs';
-import { timeout } from 'rxjs/operators';
-import { Update } from 'ngrx-data';
+/**
+ * @license
+ * Heye Vöcking All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://telepathy.app/license
+ */
 
-type KeyvalueWriteOp = 'put' | 'del';
+import { Injectable, Optional } from "@angular/core";
+import Ipfs from "ipfs";
+import * as _ from "lodash";
+import { EntityCollectionDataService, EntityCollectionServiceBase, QueryParams, Update } from "ngrx-data";
+import OrbitDB from "orbit-db";
+import { KeyValueStore } from "orbit-db-kvstore";
+import { combineLatest, from, fromEvent, merge, Observable, Subject, throwError } from "rxjs";
+import { filter, first, flatMap, map, mapTo } from "rxjs/operators";
+import { IpfsService } from "~services/ipfs.service";
+import { OrbitdbDataServiceConfig } from "~store/orbitdb-data-service-config";
 
-export interface IKeyable {
+export interface Keyable {
   readonly id: string;
+  readonly seq: number;
 }
 
 export interface EntityFunctions<T> {
   name(): string;
-  stringify(entity: T): string;
   parse(stringified: string): T;
+  query(query: QueryParams | string, all: T[]): T[];
+  stringify(entity: T): string;
   update(original: T, changes: Partial<T>): T;
-  query(query: QueryParams|string, all: T[]): T[];
 }
 
 /**
  * An entity data service using an orbit-db keyvalue store as a backend
  */
-export class OrbitdbDataService<T extends IKeyable>
+export class OrbitdbDataService<T extends Keyable>
   implements EntityCollectionDataService<T> {
 
-  private _name: string;
-  private entityName: string;
-  private getDelay = 0;
-  private odbStoreWrite$ = new Subject<string>();
-  private readonly odbStore;
-  private readonly orbitdb;
-  private saveDelay = 0;
-  private timeout = 0;
-
-  get name() {
+  public get name(): string {
     return this._name;
   }
 
@@ -65,153 +44,179 @@ export class OrbitdbDataService<T extends IKeyable>
     private readonly entityFunctions: EntityFunctions<T>,
     private readonly service: EntityCollectionServiceBase<T>,
     private readonly ipfsService: IpfsService,
-    private readonly config?: OrbitdbDataServiceConfig,
+    config?: OrbitdbDataServiceConfig,
   ) {
     this.entityName = this.entityFunctions.name();
     this._name = `${this.entityName} OrbitdbDataService`;
     const {
-      getDelay = 0,
-      saveDelay = 0,
-      timeout: to = 0,
-    } = config || {};
-    this.getDelay = getDelay;
-    this.saveDelay = saveDelay;
-    this.timeout = to;
-    this.orbitdb = this.ipfsService.ipfs.then(ipfs => new OrbitDB(ipfs));
-    this.odbStore = this.orbitdb.then(odb => this.setupStore(odb));
+//      getDelay = 0,
+      // saveDelay = 0,
+      // timeout: to = 0,
+    }: OrbitdbDataServiceConfig = config !== undefined ? config : {};
+    // this.getDelay = getDelay;
+    // this.saveDelay = saveDelay;
+    // this.timeout = to;
+    this.orbitdb = this.ipfsService.ipfs
+      .then(async (ipfs: Ipfs): Promise<OrbitDB> => OrbitDB.createInstance(ipfs));
+    this.odbStore = this.orbitdb.then(async (odb: OrbitDB): Promise<KeyValueStore<string>> => this.setupStore(odb));
+    // console.log(`this.getDelay:`, this.getDelay);
+    // console.log(`this.saveDelay:`, this.saveDelay);
+    // console.log(`this.timeout:`, this.timeout);
   }
 
-  private doWrite(
-    op: KeyvalueWriteOp,
-    key: string | number,
-    value?: string,
-  ): Observable<null> {
-    return from(this.odbStore).pipe(
-      map(store => store[op](key, value)),
-      flatMap(hash => combineLatest([this.odbStoreWrite$, from(hash)])),
-      filter(([result, hash]) => (result as any).hash === hash),
-      first(),
-      mapTo(null),
-    );
-  }
+  private readonly _name: string;
+  private readonly entityName: string;
+  // private readonly getDelay: number;
+  private readonly odbStore: Promise<KeyValueStore<string>>;
+  private readonly odbStoreWrite$: Subject<{ hash: string }> = new Subject<{ hash: string }>();
+  private readonly orbitdb: Promise<OrbitDB>;
+  // private readonly saveDelay: number;
+  // private readonly timeout: number;
 
-  private async setupStore(odb) {
-    const store = await odb.keyvalue(this.entityName, {write: ['*']});
-    const address = store.address.toString();
-    console.log('Connected to orbit-db:', address)
-
-    merge(
-      fromEvent(store.events, 'load'),
-      fromEvent(store.events, 'replicate'),
-    ).subscribe(() => {
-      this.service.setLoaded(false);
-      this.service.setLoading(true);
-    });
-
-    merge(
-      fromEvent(store.events, 'ready'),
-      fromEvent(store.events, 'replicated'),
-    ).subscribe(() => {
-      this.service.load();
-      this.service.setLoading(false);
-      this.service.setLoaded(true);
-    });
-
-    fromEvent(store.events, 'write', (address, hash) => hash)
-      .subscribe(hash => {
-        console.log('hash:', hash)
-        this.odbStoreWrite$.next(hash)
-      });
-
-    await store.load();
-    return store;
-  }
-
-  add(entity: T): Observable<T> {
-    if (!entity) {
+  public add(entity: T): Observable<T> {
+    if (entity === undefined) {
       return throwError(new Error(`No "${this.entityName}" entity to add`));
     }
     const stringified = this.entityFunctions.stringify(entity);
-    return this.doWrite('put', entity.id, stringified).pipe(
+    return from(this.odbStore).pipe(
+      map(async (store: KeyValueStore<string>): Promise<string> => store.put(entity.id, stringified)),
+      flatMap((hash: Promise<string>) => combineLatest([this.odbStoreWrite$, from(hash)])),
+      filter(([result, hash]: [{hash: string}, string]) => result.hash === hash),
+      first(),
       mapTo(entity),
     );
   }
 
-  delete(key: number|string): Observable<number|string> {
-    if (key == null) {
+  public delete(key: number | string): Observable<number | string> {
+    if (key === ``) {
       return throwError(new Error(`No "${this.entityName}" key to delete`));
     }
-    return this.doWrite('del', key).pipe(
+    return from(this.odbStore).pipe(
+// tslint:disable-next-line: no-unsafe-any no-any
+      map((store: any): string => store.del(key).toString()),
+      flatMap((hash: string) => combineLatest([this.odbStoreWrite$, from(hash)])),
+      filter(([result, hash]: [{hash: string}, string]) => result.hash === hash),
+      first(),
       mapTo(key),
     );
   }
 
-  getAll(): Observable<T[]> {
-    return from((async () => {
+  public getAll(): Observable<T[]> {
+    return from((async (): Promise<T[]> => {
       const store = await this.odbStore;
-      const index = await store.all();
-      return _(index)
-        .values()
-        .map(v => this.entityFunctions.parse(v))
-        .orderBy('seq')
-        .value();
+      return _.orderBy(
+        _.map(store.all as string[], (s: string): T => this.entityFunctions.parse(s)),
+        ({seq}: T) => seq,
+      );
     })());
   }
 
-  getById(key: number|string): Observable<T> {
-    if (key == null) {
+  public getById(key: number | string): Observable<T> {
+    if (key === ``) {
       return throwError(new Error(`No "${this.entityName}" key to get`));
     }
     return from(this.odbStore).pipe(
-      map(store => (store as any).get(key)),
-      map(s => this.entityFunctions.parse(s)),
+      map((store: KeyValueStore<string>) => store.get(key.toString())),
+      map((s: string) => this.entityFunctions.parse(s)),
     );
   }
 
-  getWithQuery(query: QueryParams|string): Observable<T[]> {
+  public getWithQuery(query: QueryParams | string): Observable<T[]> {
     return this.getAll().pipe(
-      map(all => this.entityFunctions.query(query, all)),
+      map((all: T[]) => this.entityFunctions.query(query, all)),
     );
   }
 
-  update(update: Update<T>): Observable<T> {
-    if (update == null) {
+  public update(update?: Update<T>): Observable<T> {
+    if (update === undefined) {
       return throwError(new Error(`No "${this.entityName}" update data`));
     }
     const id = update.id;
-    if (id == null) {
+    if (id === ``) {
       return throwError(new Error(`No "${this.entityName}" update id`));
     }
     return this.getById(id).pipe(
-      map(oldEntity => {
-        if (!oldEntity) {
+      map((oldEntity?: T) => {
+        if (oldEntity === undefined) {
           throw new Error(`No entry for "${this.entityName}" with id "${id}"`);
         }
         return this.entityFunctions.update(oldEntity, update.changes);
       }),
-      flatMap(newEntity => {
-        return this.doWrite('put', id, JSON.stringify(newEntity)).pipe(
+      flatMap((newEntity: T) => {
+        return from(this.odbStore).pipe(
+          map(async (store: KeyValueStore<string>): Promise<string> => store.put(
+            id.toString(), JSON.stringify(newEntity))),
+          flatMap((hash: Promise<string>) => combineLatest([this.odbStoreWrite$, from(hash)])),
+          filter(([result, hash]: [{hash: string}, string]) => result.hash === hash),
+          first(),
           mapTo(newEntity),
         );
       }),
     );
   }
 
-  upsert(entity: T): Observable<T> {
+  public upsert(entity: T): Observable<T> {
     return this.add(entity);
+  }
+
+  private async setupStore(odb: OrbitDB): Promise<KeyValueStore<string>> {
+    const store = await odb.open(this.entityName, {
+      // If "Public" flag is set, allow anyone to write to the database,
+      // otherwise only the creator of the database can write
+      accessController: {
+        write: [`*`],
+      },
+      // If database doesn't exist, create it
+      create: true,
+      // Load only the local version of the database,
+      // don't load the latest from the network yet
+      localOnly: false,
+      overwrite: true,
+      type: `keyvalue`,
+    }) as KeyValueStore<string>;
+
+    console.log(`Connected to orbit-db:`, store.address.toString());
+
+    merge(
+      fromEvent(store.events, `load`),
+      fromEvent(store.events, `replicate`),
+    ).subscribe(() => {
+      this.service.setLoaded(false);
+      this.service.setLoading(true);
+    });
+
+    merge(
+      fromEvent(store.events, `ready`),
+      fromEvent(store.events, `replicated`),
+    ).subscribe(() => {
+      this.service.load();
+      this.service.setLoading(false);
+      this.service.setLoaded(true);
+    });
+
+    fromEvent(store.events, `write`)
+      .subscribe((value: {}): void => {
+        const [address, entry, heads]: [string, { hash: string }, {}] = value as [string, { hash: string }, {}];
+        console.log(`hash:`, address, entry, heads);
+        this.odbStoreWrite$.next(entry);
+      });
+
+    await store.load();
+    return store;
   }
 }
 
+// tslint:disable-next-line: no-unsafe-any
 @Injectable()
 export class OrbitdbDataServiceFactory {
-  
+
   constructor(
     @Optional() private readonly config?: OrbitdbDataServiceConfig,
   ) {
-    this.config = this.config || {};
+    this.config = this.config !== undefined ? this.config : {};
   }
 
-  create<T extends IKeyable>(
+  public create<T extends Keyable>(
     functions: EntityFunctions<T>,
     roomService: EntityCollectionServiceBase<T>,
     ipfsSerice: IpfsService,

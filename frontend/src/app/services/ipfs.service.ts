@@ -1,11 +1,21 @@
-import * as Ipfs from 'ipfs';
-import { Injectable } from '@angular/core';
-import { env } from '@env';
+/**
+ * @license
+ * Heye Vöcking All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://telepathy.app/license
+ */
+
+import { Injectable } from "@angular/core";
+import Ipfs from "ipfs";
+import { env } from "~env";
 
 const IPFS_RELAY =
-  `/dnsaddr/${env.ipfsHost}/tcp/${env.ipfsWebsocketPort}/ws/ipfs/${env.ipfsIdentityPeerid}`;
+  `/dnsaddr/${env.ipfsHost}/tcp` +
+  `/80/ws` +
+  `/ipfs/${env.ipfsIdentityPeerid}`;
 
-function repo() {
+function repo(): string {
   return `/ipfs/${env.applicationName}/0`;
 }
 
@@ -25,51 +35,38 @@ const IPFS_CONFIG = {
   repo: repo(),
 };
 
-async function connectSwarm(ipfs, address) {
-  console.error('connecting to:', address)
-  await new Promise((res, rej) => ipfs.swarm.connect(address, err => {
-    if (err) {
-      return rej(err);
-    }
-    console.log('IPFS swarm connect: ' + address)
-    res();
-  }));
+async function connectSwarm(ipfs: Ipfs, address: string): Promise<void> {
+  console.log(`connecting to: ${address}`);
+  await ipfs.swarm.connect(address);
+  console.log(`connected`);
 }
 
+// TODO: update angular
+// tslint:disable-next-line: no-unsafe-any
 @Injectable({
-  providedIn: 'root',
+  providedIn: `root`,
 })
 export class IpfsService {
 
-  public readonly ipfs;
-  public readonly ipfsInfo;
+  public readonly ipfs: Promise<Ipfs>;
+  public readonly ipfsId: Promise<string>;
 
   constructor() {
-    console.log('env:', env)
-    this.ipfs = new Promise<any>((res, rej) => {
+    this.ipfs = new Promise<Ipfs>((res: (ipfs: Ipfs) => void ): void => {
       const ipfs = new Ipfs(IPFS_CONFIG);
-      ipfs.once('ready', async () => {
-        console.log('/ip4/127.0.0.1/tcp/4043/ws/ipfs/QmSu7h6RhaFG2s2dG3YajgjS88dFkkhGJTGNi36JAYZWKm')
-        console.log('IPFS_RELAY:', IPFS_RELAY)
+      ipfs.once(`ready`, async () => {
+        console.log(`IPFS_RELAY:`, IPFS_RELAY);
         await connectSwarm(ipfs, IPFS_RELAY);
         res(ipfs);
       });
     });
-    this.ipfsInfo = this.ipfs.then(ipfs => {
-      return new Promise<any>((res, rej) => {
-        ipfs.id((err, info) => {
-          if (err) {
-            rej(err);
-          }
-          console.log('IPFS node ready with id: ' + info.id);
-          res(info);
-        });
-      });
-    });
+    this.ipfsId = this.ipfs
+      .then(async (ipfs: Ipfs): Promise<{id: string}> => ipfs.id())
+      .then((info: {id: string}) => info.id);
   }
 
-  async connect(address) {
+  public async connect(address: string): Promise<void> {
     const ipfs = await this.ipfs;
-    connectSwarm(ipfs, address);
+    await connectSwarm(ipfs, address);
   }
 }

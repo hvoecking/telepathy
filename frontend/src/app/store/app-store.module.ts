@@ -1,21 +1,25 @@
-import { DefaultDataServiceConfig } from 'ngrx-data';
-import { EffectsModule } from '@ngrx/effects';
-import { entityMetadata } from '@services/room.service';
-import { EntityDataService } from 'ngrx-data';
-import { env } from '@env';
-import { IpfsService } from '@services/ipfs.service';
-import { NgModule } from '@angular/core';
-import { NgrxDataModule } from 'ngrx-data';
-import { OrbitdbDataServiceFactory } from '@store/orbitdb-data.service';
-import { Room } from '@services/room.service';
-import { RoomService } from '@services/room.service';
-import { StoreDevtoolsModule } from '@ngrx/store-devtools';
-import { StoreModule } from '@ngrx/store';
+/**
+ * @license
+ * Heye Vöcking All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://telepathy.app/license
+ */
+
+import { NgModule } from "@angular/core";
+import { EffectsModule } from "@ngrx/effects";
+import { StoreModule } from "@ngrx/store";
+import { StoreDevtoolsModule } from "@ngrx/store-devtools";
+import { EntityDataService, NgrxDataModule } from "ngrx-data";
+import { env } from "~env";
+import { IpfsService } from "~services/ipfs.service";
+import { entityMetadata, Room, RoomFunctions, RoomService } from "~services/room.service";
+import { OrbitdbDataServiceFactory } from "~store/orbitdb-data.service";
 
 @NgModule({
   imports: [
     EffectsModule.forRoot([]),
-    (env.versionBuildMode === 'production')
+    (env.versionBuildMode === `production`)
       ? []
       : StoreDevtoolsModule.instrument(),
     NgrxDataModule.forRoot({entityMetadata}),
@@ -27,12 +31,12 @@ import { StoreModule } from '@ngrx/store';
 })
 export class AppStoreModule {
   constructor(
-    private readonly entityDataService: EntityDataService,
-    private readonly ipfsService: IpfsService,
-    private readonly orbitdbDataServiceFactory: OrbitdbDataServiceFactory,
-    private readonly roomService: RoomService,
+    entityDataService: EntityDataService,
+    ipfsService: IpfsService,
+    orbitdbDataServiceFactory: OrbitdbDataServiceFactory,
+    roomService: RoomService,
   ) {
-    const functions = Room.getEntityFunctions();
+    const functions = new RoomFunctions();
     entityDataService.registerService(
       functions.name(),
       orbitdbDataServiceFactory.create<Room>(

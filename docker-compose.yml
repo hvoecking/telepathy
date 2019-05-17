@@ -66,7 +66,7 @@ services:
     command: serve
     container_name: ipfs
     hostname: ipfs
-    image: telepathy/ipfs.dist:latest
+    image: telepathy/ipfs.files:latest
     networks:
       default:
         aliases:
@@ -76,11 +76,15 @@ services:
       - "${ENV_IPFS_GATEWAY_PORT}:${ENV_IPFS_GATEWAY_PORT}"
       - "${ENV_IPFS_TCP_PORT}:${ENV_IPFS_TCP_PORT}"
       - "${ENV_IPFS_WEBSOCKET_PORT}:${ENV_IPFS_WEBSOCKET_PORT}"
+      - "80:${ENV_CADDY_PORT}"
+      - "443:${ENV_CADDY_PORT}"
     volumes:
       - "${PROJECT_ROOT}/ipfs:${ENV_DOCKER_PROJECT_ROOT}/"
+      - /tmp/data:/data
+    user: app
 
   lint:
-    command: cat
+    command: tail -f config/profile
     image: telepathy/lint.setup
     volumes:
       - '${PWD}/lint:${ENV_DOCKER_PROJECT_ROOT}'

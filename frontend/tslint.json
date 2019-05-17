@@ -3,7 +3,6 @@
     "tslint-eslint-rules"
   ],
   "rules": {
-    "adjacentOverloadSignaturesRule": true,
     "align": [
       true,
       "arguments",
@@ -35,31 +34,17 @@
       "doc",
       "singleline"
     ],
-    "component-selector": [
-      true,
-      "element",
-      "app",
-      "page",
-      "kebab-case"
-    ],
     "curly": true,
     "cyclomatic-complexity": true,
     "deprecation": {
       "severity": "warn"
     },
-    "directive-class-suffix": true,
-    "directive-selector": [
-      true,
-      "attribute",
-      "app",
-      "camelCase"
-    ],
     "encoding": true,
     "eofline": true,
     "file-header": [
       true,
-      "Copyright \\d{4}",
-      "Copyright 2018"
+      "@license",
+      "@license\nHeye Vöcking All Rights Reserved.\n\nUse of this source code is governed by an MIT-style license that can be\nfound in the LICENSE file at https://telepathy.app/license"
     ],
     "file-name-casing": [
       true,
@@ -67,7 +52,6 @@
     ],
     "forin": true,
     "function-constructor": true,
-    "import-": true,
     "increment-decrement": true,
     "indent": [
       true,
@@ -91,7 +75,7 @@
     "match-default-export-name": true,
     "max-classes-per-file": [
       true,
-      1,
+      3,
       "exclude-class-expressions"
     ],
     "max-file-line-count": [
@@ -159,8 +143,11 @@
       true,
       "dev",
       [
+        "~app",
+        "~env",
         "~pages",
-        "~app"
+        "~services",
+        "~store"
       ]
     ],
     "no-import-side-effect": [
@@ -177,7 +164,6 @@
       "ignore-params"
     ],
     "no-inferred-empty-object-type": true,
-    "no-input-rename": true,
     "no-internal-module": true,
     "no-invalid-template-strings": true,
     "no-invalid-this": [
@@ -192,14 +178,11 @@
     "no-non-null-assertion": true,
     "no-null-keyword": true,
     "no-object-literal-type-assertion": true,
-    "no-output-on-prefix": true,
-    "no-output-rename": true,
     "no-parameter-properties": false,
     "no-parameter-reassignment": true,
     "no-redundant-jsdoc": true,
     "no-reference": true,
     "no-reference-import": true,
-    "no-relative-imports": true,
     "no-require-imports": true,
     "no-return-await": false,
     "no-shadowed-variable": [
@@ -213,13 +196,15 @@
     "no-string-throw": true,
     "no-submodule-imports": [
       true,
-      "~pages",
-      "~app",
-      "zone.js/dist/zone",
-      "zone.js/dist/zone-testing",
-      "rxjs",
       "@angular",
-      "@ionic-native"
+      "@ionic-native",
+      "~app",
+      "~pages",
+      "~services",
+      "~store",
+      "rxjs",
+      "zone.js/dist/zone-testing",
+      "zone.js/dist/zone"
     ],
     "no-switch-case-fall-through": true,
     "no-this-assignment": [
@@ -232,7 +217,10 @@
       }
     ],
     "no-trailing-whitespace": true,
-    "no-unbound-method": true,
+    "no-unbound-method": [
+      true,
+      "ignore-static"
+    ],
     "no-unnecessary-callback-wrapper": true,
     "no-unnecessary-class": [
       true,
@@ -241,14 +229,12 @@
     ],
     "no-unnecessary-initializer": true,
     "no-unnecessary-qualifier": true,
-    "no-unnecessary-type-assertions": true,
     "no-unsafe-any": true,
     "no-unsafe-finally": true,
     "no-unused-expression": [
       true,
       "allow-fast-null-checks"
     ],
-    "no-unused-variable": true,
     "no-use-before-declare": true,
     "no-var-keyword": true,
     "no-var-requires": true,
@@ -355,17 +341,11 @@
         "variable-declaration": "nospace"
       }
     ],
-    "typeof-compare": true,
     "unified-signatures": true,
     "unnecessary-bind": true,
     "unnecessary-constructor": true,
     "use-default-type-parameter": true,
-    "use-host-property-decorator": true,
-    "use-input-property-decorator": true,
     "use-isnan": true,
-    "use-life-cycle-interface": true,
-    "use-output-property-decorator": true,
-    "use-pipe-transform-interface": true,
     "variable-name": [
       true,
       "ban-keywords",
@@ -383,8 +363,6 @@
       "check-type",
       "check-typecast",
       "check-type-operator",
-      "check-preblock",
-      "check-postbrace"
-    ]
+      "check-preblock"    ]
   }
 }

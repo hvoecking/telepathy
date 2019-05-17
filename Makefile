@@ -46,8 +46,17 @@ test: down files-lint build-chrome-debug
 	$(MAKE) -f android/build.Makefile dist
 	docker-compose run -T --service-ports --use-aliases ci
 
+.PHONY: build-serve
+build-serve: down serve
+	$(MAKE) -f ipfs/build.Makefile files
+	$(MAKE) -f frontend/build.Makefile setup
+
+.PHONY: serve
+serve: down
+	docker-compose up serve
+
 .PHONY: watch
-watch: down build-chrome-debug build-ipfs
+watch: down build-chrome-debug #build-ipfs
 	$(MAKE) -f frontend/build.Makefile setup
 	docker-compose up watch
 
@@ -57,4 +66,8 @@ build-chrome-debug:
 
 .PHONY: build-ipfs
 build-ipfs:
-	$(MAKE) -f ipfs/build.Makefile dist
+	$(MAKE) -f ipfs/build.Makefile files
+
+.PHONY: ipfs
+ipfs:
+	docker-compose up ipfs

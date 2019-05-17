@@ -1,5 +1,9 @@
-/*!
- * Copyright 2018
+/**
+ * @license
+ * Heye Vöcking All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://telepathy.app/license
  */
 
 import { NgModule } from "@angular/core";
@@ -12,31 +16,23 @@ const routes: Routes = [
     redirectTo: `splash`,
   },
   {
-    loadChildren: `./pages/splash.module#SplashPageModule`,
+    loadChildren: `./pages/splash/splash.module#SplashPageModule`,
     path: `splash`,
   },
   {
-    loadChildren: `./pages/home.module#HomePageModule`,
-    path: `home`,
-  },
-  {
-    loadChildren: `./pages/list.module#ListPageModule`,
-    path: `list`,
-  },
-  {
-    loadChildren: `./pages/connect-peer.module#ConnectPeerPageModule`,
+    loadChildren: `./pages/connect-peer/connect-peer.module#ConnectPeerPageModule`,
     path: `connect-peer`,
   },
   {
-    loadChildren: `./pages/create-room.module#CreateRoomPageModule`,
+    loadChildren: `./pages/create-room/create-room.module#CreateRoomPageModule`,
     path: `create-room`,
   },
   {
-    loadChildren: `./pages/edit-room.module#EditRoomPageModule`,
+    loadChildren: `./pages/edit-room/edit-room.module#EditRoomPageModule`,
     path: `edit-room/:id`,
   },
   {
-    loadChildren: `./pages/rooms.module#RoomsPageModule`,
+    loadChildren: `./pages/rooms/rooms.module#RoomsPageModule`,
     path: `rooms`,
   },
 ];

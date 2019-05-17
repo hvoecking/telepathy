@@ -24,6 +24,7 @@ ENV PATH="${DOCKER_PROJECT_ROOT}/bin/:${PATH}"
 COPY --chown=app:app bin/ bin/
 ARG ENV_CONTENT=UNSET
 ENV ENV_CONTENT="${ENV_CONTENT}"
+RUN echo ENV_CONTENT=$ENV_CONTENT
 RUN mkdir config \
   && cd config \
   && echo "${ENV_CONTENT}" >.env \

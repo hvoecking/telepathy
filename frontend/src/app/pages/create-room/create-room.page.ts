@@ -1,68 +1,72 @@
-import * as _ from 'lodash';
-import { ApplicationRef } from '@angular/core';
-import { Component } from '@angular/core';
-import { delay } from 'rxjs/operators';
-import { EntityOp } from 'ngrx-data';
-import { FormBuilder } from '@angular/forms';
-import { FormControl } from '@angular/forms';
-import { FormGroup } from '@angular/forms';
-import { map } from 'rxjs/operators';
-import { Observable } from 'rxjs';
-import { ofEntityOp } from 'ngrx-data';
-import { Room } from '@services/room.service';
-import { RoomService } from '@services/room.service';
-import { Router } from '@angular/router';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
-import { Validators } from '@angular/forms';
+/**
+ * @license
+ * Heye Vöcking All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://telepathy.app/license
+ */
+
+import { ApplicationRef, Component } from "@angular/core";
+import { FormBuilder, FormControl, FormGroup, Validators } from "@angular/forms";
+import { Router } from "@angular/router";
+import { EntityOp, ofEntityOp, EntityAction } from "ngrx-data";
+import { Subject } from "rxjs";
+import { delay, map, takeUntil } from "rxjs/operators";
+import { Room, RoomService } from "~services/room.service";
 
 @Component({
-  selector: 'create-room',
-  templateUrl: './create-room.page.html',
-  styleUrls: ['./create-room.page.scss'],
+  selector: `create-room`,
+  styleUrls: [`./create-room.page.scss`],
+  templateUrl: `./create-room.page.html`,
 })
 export class CreateRoomPage {
 
+  public readonly error$: Subject<string> = new Subject<string>();
   public readonly form: FormGroup = this.formBuilder.group({
-    name: new FormControl('', Validators.required),
+    name: new FormControl(``, Validators.required),
   });
-  public error$: Observable<string>;
-  public room$: Observable<Room>;
-
-  private readonly destroy$ = new Subject();
+  public readonly room$: Subject<Room> = new Subject<Room>();
 
   constructor(
     private readonly app: ApplicationRef,
     private readonly formBuilder: FormBuilder,
     private readonly roomService: RoomService,
     private readonly router: Router,
-  ) { }
+  ) {
+    this.ionViewWillEnter();
+  }
 
-  ionViewWillEnter() {
-    this.error$ = this.roomService.errors$.pipe(
+  private readonly destroy$: Subject<void> = new Subject<void>();
+
+  public async createRoom(newRoom: { name: string }): Promise<void> {
+    const { dirty, valid }: FormGroup = this.form;
+    if (dirty && valid) {
+      this.roomService.add(new Room({name: newRoom.name, address: `example address`, seq: 0}));
+      this.form.reset();
+      await this.goBack();
+    }
+  }
+
+  public async goBack(): Promise<void> {
+    await this.router.navigate([`/rooms`]);
+  }
+
+  protected ionViewWillEnter(): void {
+    this.roomService.errors$.pipe(
       ofEntityOp(EntityOp.QUERY_BY_KEY_ERROR),
-      map(errorAction => errorAction.payload.error.message),
+      map(({ payload: { error } }: EntityAction) => (
+        error !== undefined
+          ? error.message
+          : `Unknown error`
+      )),
       // delay guards against `ExpressionChangedAfterItHasBeenCheckedError`
       delay(1),
       takeUntil(this.destroy$),
-    );
+    ).subscribe(this.error$);
     this.app.tick();
   }
 
-  ionViewWillLeave() {
+  protected ionViewWillLeave(): void {
     this.destroy$.next();
-  }
-
-  goBack() {
-    this.router.navigate(['/rooms']);
-  }
-
-  createRoom(newRoom) {
-    const { dirty, valid } = this.form;
-    if (dirty && valid) {
-      this.roomService.add(new Room(newRoom.name));
-      this.form.reset();
-      this.goBack();
-    }
   }
 }

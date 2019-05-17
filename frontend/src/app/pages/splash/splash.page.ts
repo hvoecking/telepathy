@@ -1,11 +1,21 @@
-import { Component } from '@angular/core';
-import { Router } from '@angular/router';
-import * as insertCSS from 'insert-css';
+/**
+ * @license
+ * Heye Vöcking All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://telepathy.app/license
+ */
+
+import { Component } from "@angular/core";
+import { Router } from "@angular/router";
+import { insertCss } from "insert-css";
+
+const VERSION_BOX_TOP_MARGIN = 32;
 
 @Component({
-  selector: 'app-splash',
-  templateUrl: 'splash.page.html',
-  styleUrls: ['splash.page.scss'],
+  selector: `app-splash`,
+  styleUrls: [`splash.page.scss`],
+  templateUrl: `splash.page.html`,
 })
 export class SplashPage {
 
@@ -15,20 +25,30 @@ export class SplashPage {
 
   }
 
-  ionViewDidEnter() {
-    const loadingContainer = document.getElementById('loading-container') as HTMLElement;
-    const versionText = document.getElementById('app-name-version-text') as HTMLElement;
-    const versionBox = versionText.getBoundingClientRect();
-    const originLogo = document.getElementById('origin-logo') as HTMLElement;
-    const originBox = originLogo.getBoundingClientRect();
-    const targetLogo = document.getElementById('target-logo') as HTMLElement;
-    const targetBox = targetLogo.getBoundingClientRect();
+  protected ionViewDidEnter(): void {
+    this.moveSplashscreen()
+      .catch((e: Error) => console.error(e));
+  }
+
+  private async moveSplashscreen(): Promise<void> {
+    const loadingContainer = document.getElementById(`loading-container`);
+    const versionText = document.getElementById(`app-name-version-text`);
+    const originLogo = document.getElementById(`origin-logo`);
+    const targetLogo = document.getElementById(`target-logo`);
 
     // Check if the splash screen did already run
-    if (!targetLogo) {
+    if (
+      loadingContainer === null ||
+      versionText === null ||
+      originLogo === null ||
+      targetLogo === null
+    ) {
       return;
     }
 
+    const versionBox = versionText.getBoundingClientRect();
+    const originBox = originLogo.getBoundingClientRect();
+    const targetBox = targetLogo.getBoundingClientRect();
     const animationDuration = 1000;
     const animation = `
       .move {
@@ -38,7 +58,7 @@ export class SplashPage {
         0% {
           position: fixed;
           left: ${versionBox.left}px;
-          top: ${versionBox.top - 32}px;
+          top: ${versionBox.top - VERSION_BOX_TOP_MARGIN}px;
         }
         to {
           position: fixed;
@@ -93,14 +113,17 @@ export class SplashPage {
         }
       }
     `;
-    insertCSS(animation);
+    insertCss(animation);
     targetLogo.remove();
-    originLogo.className = 'spin-move';
-    versionText.className = 'move';
-    this.router.navigate(['/rooms']);
-    setTimeout(() => {
-      loadingContainer.remove();
-    }, animationDuration);
+    originLogo.className = `spin-move`;
+    versionText.className = `move`;
+    await this.router.navigate([`/rooms`]);
+    setTimeout(
+      () => {
+        loadingContainer.remove();
+      },
+      animationDuration,
+    );
 
   }
 

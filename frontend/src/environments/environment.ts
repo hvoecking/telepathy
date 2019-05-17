@@ -1,5 +1,9 @@
-/*!
- * Copyright 2018
+/**
+ * @license
+ * Heye Vöcking All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://telepathy.app/license
  */
 
 // The file contents for the current environment will overwrite these during
@@ -11,7 +15,7 @@ export const environment = {
   production: false,
 };
 
-/*
+/**
  * In development mode, to ignore zone related error stack frames such as
  * `zone.run`, `zoneDelegate.invokeTask` for easier debugging, you can
  * import the following file, but please comment it out in production mode

@@ -1,76 +1,79 @@
-import { ApplicationRef } from '@angular/core';
-import { Component } from '@angular/core';
-import { distinctUntilChanged } from 'rxjs/operators';
-import { FormControl } from '@angular/forms';
-import { from } from 'rxjs';
-import { Input } from '@angular/core';
-import { IpfsService } from '@services/ipfs.service';
-import { LoadingController } from '@ionic/angular';
-import { map } from 'rxjs/operators';
-import { merge } from 'rxjs';
-import { Observable } from 'rxjs';
-import { Room } from '@services/room.service';
-import { RoomService } from '@services/room.service';
-import { Router } from '@angular/router';
-import { Subject } from 'rxjs';
-import { take } from 'rxjs/operators';
-import { throttleTime } from 'rxjs/operators';
+/**
+ * @license
+ * Heye Vöcking All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://telepathy.app/license
+ */
+
+import { ApplicationRef, Component } from "@angular/core";
+import { LoadingController } from "@ionic/angular";
+import { Subject, from, Observable, merge } from "rxjs";
+import { distinctUntilChanged, throttleTime } from "rxjs/operators";
+import { IpfsService } from "~services/ipfs.service";
+import { RoomService, Room } from "~services/room.service";
+
+const THROTTLE_TIME = 300;
 
 @Component({
-  selector: 'app-page-rooms',
-  templateUrl: 'rooms.page.html',
-  styleUrls: ['rooms.page.scss'],
+  selector: `app-page-rooms`,
+  styleUrls: [`rooms.page.scss`],
+  templateUrl: `rooms.page.html`,
 })
 export class RoomsPage {
 
-  public readonly search$ = new Subject<any>();
+  public readonly ipfsPeerId$: Observable<string> = from(this.ipfsService.ipfsId);
+  public readonly loading$: Subject<boolean> = this.roomService.zonedLoading$;
 
-  private readonly rooms$ = merge(
+  public readonly rooms$: Observable<Room[]> = merge(
     this.roomService.zonedEntities$,
     this.roomService.zonedFilteredEntities$,
   );
-  private readonly loading$ = this.roomService.zonedLoading$;
-  private readonly ipfsPeerId$ = from(this.ipfsService.ipfsInfo.then(info => info.id));
+  public readonly search$: Subject<string> = new Subject<string>();
+
+  constructor(
+    private readonly app: ApplicationRef,
+    private readonly roomService: RoomService,
+    private readonly ipfsService: IpfsService,
+    private readonly loadingCtrl: LoadingController,
+  ) {
+    this.init()
+    .catch((e: Error) => console.error(e));
+  }
 
   // Works around the bug described here: https://github.com/ionic-team/ionic/issues/15345
   // TODO: Remove once updated to >=4.0.0-beta.16
-  fixLoadingBug(loading) {
-    loading.present();
-    loading.dismiss();
-    return(loading);
+  public async fixLoadingBug(loading: HTMLIonLoadingElement): Promise<HTMLIonLoadingElement> {
+    await loading.present();
+    await loading.dismiss();
+    return loading;
   }
 
-  constructor(
-    private router: Router,
-    private app: ApplicationRef,
-    private roomService: RoomService,
-    private ipfsService: IpfsService,
-    private loadingCtrl: LoadingController,
-  ) {
-    this.loadingCtrl.create({
-      message: 'Loading rooms...',
-    })
-    .then(loading => this.fixLoadingBug(loading))
-    .then(loading => this.roomService.loading$.subscribe(v => {
-      console.log('loading:', loading)
-      if (v) {
-        loading.present();
-      } else {
-        loading.dismiss();
-      }
-      this.app.tick();
-    }));
-    this.roomService.loaded$.subscribe(v => {
-      console.log('loaded:', v)
-    });
-  }
-
-  ionViewWillEnter() {
+  protected ionViewWillEnter(): void {
     this.roomService.getAll();
 
     this.search$.pipe(
-      throttleTime(300, void 0, {leading: true, trailing: true}),
+      throttleTime(THROTTLE_TIME, void 0, {leading: true, trailing: true}),
       distinctUntilChanged(),
-    ).subscribe(pattern => this.roomService.setFilter(pattern));
+    ).subscribe((pattern: string) => this.roomService.setFilter(pattern));
+  }
+
+  private async init(): Promise<void> {
+    const loading = await this.loadingCtrl.create({
+      message: `Loading rooms...`,
+    });
+    await this.fixLoadingBug(loading);
+    this.roomService.loading$.subscribe(async (v: boolean) => {
+      console.log(`loading:`, loading);
+      if (v) {
+        await loading.present();
+      } else {
+        await loading.dismiss();
+      }
+      this.app.tick();
+    });
+    this.roomService.loaded$.subscribe((v: boolean) => {
+      console.log(`loaded:`, v);
+    });
   }
 }
