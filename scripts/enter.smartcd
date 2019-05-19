@@ -1,3 +1,4 @@
 autostash NODE_ENV="development"
 autostash PATH="${PWD}/scripts/bin:${PATH}"
 autostash PROJECT_ROOT="${PWD}"
+autostash DATA_DIR="${PWD}/private/envs/data"

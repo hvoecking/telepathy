@@ -47,8 +47,9 @@ test: down files-lint build-chrome-debug
 	docker-compose run -T --service-ports --use-aliases ci
 
 .PHONY: build-serve
-build-serve: down serve
+build-serve: down
 	$(MAKE) -f ipfs/build.Makefile files
+	$(MAKE) -f caddy/build.Makefile files
 	$(MAKE) -f frontend/build.Makefile setup
 
 .PHONY: serve
@@ -64,6 +65,14 @@ watch: down build-chrome-debug #build-ipfs
 build-chrome-debug:
 	$(MAKE) -f chrome-debug/build.Makefile setup
 
+.PHONY: build-caddy
+build-caddy: build-ipfs
+	$(MAKE) -f caddy/build.Makefile files
+
+.PHONY: caddy
+caddy:
+	docker-compose up caddy
+
 .PHONY: build-ipfs
 build-ipfs:
 	$(MAKE) -f ipfs/build.Makefile files
@@ -71,3 +80,16 @@ build-ipfs:
 .PHONY: ipfs
 ipfs:
 	docker-compose up ipfs
+
+.PHONY: publish
+publish: down
+	$(MAKE) -f frontend/build.Makefile dist
+	$(MAKE) -f ipfs/build.Makefile dist
+	docker-compose run publish
+
+.PHONY: gcp
+gcp: down
+	$(MAKE) -f frontend/build.Makefile dist
+	$(MAKE) -f ipfs/build.Makefile dist
+	$(MAKE) -f caddy/build.Makefile dist
+	$(MAKE) -f gcp/build.Makefile dist

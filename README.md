@@ -14,7 +14,7 @@
 </p>
 <br>
 
-This is a work in progress, as of now (v0.1.0) only the project structure and CI are setup.
+This is a work in progress, as of now (v0.1.0) only the project structure and CI are set up.
 
 # Features
 ## App

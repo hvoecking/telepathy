@@ -38,11 +38,11 @@ export class ConnectPeerPage {
     }
   }
 
-  protected ionViewWillEnter(): void {
-    this.app.tick();
+  public async goBack(): Promise<void> {
+    await this.router.navigate([`/rooms`]);
   }
 
-  private async goBack(): Promise<void> {
-    await this.router.navigate([`/rooms`]);
+  protected ionViewWillEnter(): void {
+    this.app.tick();
   }
 }

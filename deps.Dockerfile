@@ -6,9 +6,12 @@ COPY --chown=app:app \
   package.json \
   ./
 RUN \
-  [[ ${NODE_ENV} == development ]] || (npm ci && npm cache clean --force)
+  (npm ci && npm cache clean --force)
 
 FROM modules AS modules-production
+RUN ls node_modules/@angular-devkit/core
+#RUN npm i @angular/cli@7.4.2 @angular-devkit/build-angular @angular/compiler-cli
+#RUN cd .. && npm i @angular/compiler@ typescript@3.1.1 && cp -rf node_modules/* telepathy/node_modules/
 VOLUME "${DOCKER_PROJECT_ROOT}/node_modules"
 
 FROM modules AS modules-test
@@ -24,7 +27,6 @@ ENV PATH="${DOCKER_PROJECT_ROOT}/bin/:${PATH}"
 COPY --chown=app:app bin/ bin/
 ARG ENV_CONTENT=UNSET
 ENV ENV_CONTENT="${ENV_CONTENT}"
-RUN echo ENV_CONTENT=$ENV_CONTENT
 RUN mkdir config \
   && cd config \
   && echo "${ENV_CONTENT}" >.env \

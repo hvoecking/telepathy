@@ -2,21 +2,21 @@
 
 set -euo pipefail
 
-typeset -r PROFILE=config/profile
+PROFILE=config/profile
 
+# If a pseudo TTY is allocated, we are assuming an interactive shell
 if [[ -t 0 ]]
 then
-  # A pseudo TTY is allocated, assuming interactive shell
   if [[ -f "${PROFILE}" ]]
   then
-    source config/profile
+    source "${PROFILE}"
   else
     echo "File '${PROFILE}' not found!" >&2
   fi
 
   "${@}"
 else
-  source config/profile
+  source "${PROFILE}"
 
   if can-sudo
   then

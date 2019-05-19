@@ -1,0 +1,5 @@
+mkdir /input /output
+(
+  cd base
+  npm ci && npm cache clean --force
+)

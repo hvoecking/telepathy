@@ -7,8 +7,18 @@ TARGET="${1}"; shift
 
 #   --cache-from "telepathy/${COMPONENT}.${TARGET}:latest"
 
+telepathy_tag() {
+  echo "telepathy/${COMPONENT}.${TARGET}"
+}
+
+gcp_tag() (
+  export $(cat "${PROJECT_ROOT}/.env" | grep ENV_GCP_PROJECT_ID)
+  echo "gcr.io/${ENV_GCP_PROJECT_ID}/${COMPONENT}.${TARGET}"
+)
+
+
 docker build \
-  -t "telepathy/${COMPONENT}.${TARGET}" \
+  --tag $([[ "${COMPONENT}" == "gcp" ]] && $(echo gcp_tag) || $(echo telepathy_tag)) \
   --target "${TARGET}" \
   --build-arg NODE_ENV="${NODE_ENV}" \
   --build-arg ENV_CONTENT="$(cat "${PROJECT_ROOT}/.env")" \

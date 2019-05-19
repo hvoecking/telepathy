@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+echo "starting ipfs..."
+PATH="${DOCKER_PROJECT_ROOT}/ipfs-scripts/:${PATH}" "${DOCKER_PROJECT_ROOT}/ipfs-scripts/serve" &
+sleep 10
+
+echo "Publishing version ${ENV_VERSION_FULL_NAME}"
+PATH="${DOCKER_PROJECT_ROOT}/ipfs-scripts/:${PATH}" "${DOCKER_PROJECT_ROOT}/ipfs-scripts/dist"
+
+echo "starting caddy..."
+PATH="${DOCKER_PROJECT_ROOT}/caddy-scripts/:${PATH}" "${DOCKER_PROJECT_ROOT}/caddy-scripts/serve" &
+sleep 1
+
+while true
+do
+  sleep 2
+
+  # check for ipfs
+  if ! ps awux | grep [/]usr/local/bin/ipfs > /dev/null
+  then
+    echo "ipfs not running, closing..."
+    break
+  fi
+
+  # check for caddy
+  if ! ps awux | grep [/]usr/local/bin/caddy > /dev/null
+  then
+    echo "caddy not running, closing..."
+    break
+  fi
+done

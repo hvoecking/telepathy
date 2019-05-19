@@ -3,6 +3,7 @@ services:
 
   android:
     command: dist
+    env_file: .env
     image: telepathy/android.setup
     privileged: true
     volumes:
@@ -13,58 +14,39 @@ services:
       - '${PROJECT_ROOT}/android/.android:${ENV_DOCKER_USER_HOME}/.android/'
       - '/dev/bus/usb:/dev/bus/usb'
 
-  appium:
-    image: telepathy/appium.files
+  caddy:
+    cap_add:
+      - NET_BIND_SERVICE
+    command: serve
+    container_name: caddy
     depends_on:
-      - selenium-hub
-    environment:
-      APPIUM: 'true'
-      APPIUM_HOST: '${ENV_APPIUM_HOST}'
-      APPIUM_PORT: '${ENV_APPIUM_PORT}'
-      CONNECT_TO_GRID: 'true'
-      DEVICE: Samsung Galaxy S6
-      MOBILE_WEB_TEST: 'true'
-      SELENIUM_HOST: '${ENV_SELENIUM_HOST}'
-      SELENIUM_PORT: '${ENV_SELENIUM_PORT}'
+      - ipfs
+    env_file: .env
+    hostname: caddy
+    image: telepathy/caddy.files:latest
     networks:
       default:
         aliases:
-          - '${ENV_APPIUM_HOST}'
+          - "${ENV_CADDY_HOST}"
     ports:
-      - '${ENV_APPIUM_PORT}:${ENV_APPIUM_PORT}'
-      - '6080:6080'
-      - '5554:5554'
-      - '5555:5555'
-    privileged: true
+      - "80:80"
+      - "443:443"
+    volumes:
+      - '${DATA_DIR}/${ENV_VERSION_BUILD_TYPE}/caddy:/data/caddy'
+    user: app
 
-  chrome-debug:
-    image: telepathy/chrome-debug.setup
-    depends_on:
-      - selenium-hub
-    environment:
-      ENV_FRONTEND_HOST: '${ENV_FRONTEND_HOST}'
-      ENV_FRONTEND_PORT: '${ENV_FRONTEND_PORT}'
-      HUB_PORT_4444_TCP_ADDR: '${ENV_SELENIUM_HOST}'
-      HUB_PORT_4444_TCP_PORT: '${ENV_SELENIUM_PORT}'
-    ports:
-      - '5900:5900'
-
-  ci:
-    command: ci
-    depends_on:
-      - chrome-debug
-      - appium
-    image: telepathy/frontend.dist
-    ports:
-      - '${ENV_FRONTEND_PORT}:${ENV_FRONTEND_PORT}'
-    networks:
-      default:
-        aliases:
-          - '${ENV_FRONTEND_HOST}'
+  publish:
+    command: dist
+    env_file: .env
+    image: telepathy/ipfs.dist:latest
+    volumes:
+      - '${DATA_DIR}/${ENV_VERSION_BUILD_TYPE}/ipfs:/data/ipfs'
+    user: app
 
   ipfs:
     command: serve
     container_name: ipfs
+    env_file: .env
     hostname: ipfs
     image: telepathy/ipfs.files:latest
     networks:
@@ -76,36 +58,16 @@ services:
       - "${ENV_IPFS_GATEWAY_PORT}:${ENV_IPFS_GATEWAY_PORT}"
       - "${ENV_IPFS_TCP_PORT}:${ENV_IPFS_TCP_PORT}"
       - "${ENV_IPFS_WEBSOCKET_PORT}:${ENV_IPFS_WEBSOCKET_PORT}"
-      - "80:${ENV_CADDY_PORT}"
-      - "443:${ENV_CADDY_PORT}"
     volumes:
       - "${PROJECT_ROOT}/ipfs:${ENV_DOCKER_PROJECT_ROOT}/"
-      - /tmp/data:/data
+      - '${DATA_DIR}/${ENV_VERSION_BUILD_TYPE}/ipfs:/data/ipfs'
     user: app
-
-  lint:
-    command: tail -f config/profile
-    image: telepathy/lint.setup
-    volumes:
-      - '${PWD}/lint:${ENV_DOCKER_PROJECT_ROOT}'
-      - '${PWD}/.git:${ENV_DOCKER_PROJECT_ROOT}/.git'
-
-  selenium-hub:
-    environment:
-      GRID_TIMEOUT: 10000
-    hostname: '${ENV_SELENIUM_HOST}'
-    image: selenium/hub:3.141.59-antimony
-    ports:
-      - '${ENV_SELENIUM_PORT}:${ENV_SELENIUM_PORT}'
-    networks:
-      default:
-        aliases:
-          - '${ENV_SELENIUM_HOST}'
 
   serve:
     command: serve
     depends_on:
-      - ipfs
+      - caddy
+    env_file: .env
     image: telepathy/frontend.setup
     ports:
       - '${ENV_FRONTEND_LAB_PORT}:${ENV_FRONTEND_LAB_PORT}'
@@ -115,26 +77,5 @@ services:
       default:
         aliases:
           - '${ENV_FRONTEND_HOST}'
-    volumes:
-      - '${PROJECT_ROOT}/frontend:${ENV_DOCKER_PROJECT_ROOT}/'
-
-  travis:
-    command: travis
-    depends_on:
-      - chrome-debug
-    image: telepathy/frontend.dist
-    ports:
-      - '${ENV_FRONTEND_PORT}:${ENV_FRONTEND_PORT}'
-    networks:
-      default:
-        aliases:
-          - '${ENV_FRONTEND_HOST}'
-
-  watch:
-    command: watch
-    depends_on:
-      - chrome-debug
-      - serve
-    image: telepathy/frontend.setup
     volumes:
       - '${PROJECT_ROOT}/frontend:${ENV_DOCKER_PROJECT_ROOT}/'

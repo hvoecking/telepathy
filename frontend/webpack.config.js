@@ -3,6 +3,7 @@ const path = require('path');
 module.exports = {
   resolve: {
     alias: {
+      "crypto": "crypto-browserify",
       "~app": path.resolve('src/app/'),
       "~assets": path.resolve('src/assets/'),
       "~env": path.resolve('config/environment'),
@@ -14,10 +15,12 @@ module.exports = {
   },
   node: {
     crypto: true,
+    fs: 'empty',
     http: true,
     https: true,
     os: true,
-    vm: true,
+    path: true,
     stream: true,
+    vm: true,
   },
 };

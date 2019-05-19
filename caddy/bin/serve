@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+configure
+
+echo "starting caddy..."
+/usr/local/bin/caddy \
+  -log stdout \
+  -agree=${ENV_USE_SSL} \
+  -conf="${CADDYPATH}/Caddyfile" \
+  -root=/var/tmp \
+  -email="${ENV_AUTHOR_EMAIL}"

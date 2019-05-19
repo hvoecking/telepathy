@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+CADDYFILE="${CADDYPATH}/Caddyfile"
+
+mkdir -vp ${CADDYPATH}
+
+get_tls() {
+  if [[ "${ENV_USE_SSL}" == "true" ]]
+  then
+    echo "tls on"
+  else
+    echo "tls off"
+  fi
+}
+
+get_protocol() {
+  if [[ "${ENV_USE_SSL}" == "true" ]]
+  then
+    echo "https://"
+  else
+    echo "http://"
+  fi
+}
+
+get_port() {
+  if [[ "${ENV_USE_SSL}" == "true" ]]
+  then
+    echo ""
+  else
+    echo ":80"
+  fi
+}
+
+cat << ! > ${CADDYFILE}
+${ENV_FRONTEND_HOST}$(get_port) {
+  $(get_tls)
+  gzip
+  cors
+  cache
+  proxy / http://${ENV_IPFS_HOST}:${ENV_IPFS_GATEWAY_PORT}/ {
+    transparent
+  }
+}
+${ENV_SHORT_HOST}$(get_port) {
+  $(get_tls)
+  redir 301 {
+    $(get_protocol)${ENV_FRONTEND_HOST}{uri}
+  }
+}
+${ENV_GATEWAY_HOST}$(get_port) {
+  $(get_tls)
+  gzip
+  cors
+  cache
+  proxy / http://${ENV_IPFS_HOST}:${ENV_IPFS_GATEWAY_PORT}/ {
+    transparent
+  }
+}
+${ENV_RELAY_HOST}$(get_port) {
+  $(get_tls)
+  proxy / http://${ENV_IPFS_HOST}:${ENV_IPFS_WEBSOCKET_PORT} {
+    websocket
+  }
+}
+!

@@ -11,8 +11,8 @@ import Ipfs from "ipfs";
 import { env } from "~env";
 
 const IPFS_RELAY =
-  `/dnsaddr/${env.ipfsHost}/tcp` +
-  `/80/ws` +
+  `/dnsaddr/${env.relayHost}/tcp` +
+  `/${env.useSsl === `true` ? `443` : `80`}/ws` +
   `/ipfs/${env.ipfsIdentityPeerid}`;
 
 function repo(): string {

@@ -1,6 +1,6 @@
 ARG NODE_ENV=UNSET
 
-FROM node:8.12.0-stretch AS env
+FROM node:10.15.0-stretch AS env
 ARG NODE_ENV=UNSET
 ARG HOST_UID=UNSET
 ARG HOST_GID=UNSET
@@ -17,19 +17,13 @@ ENV \
   userspec="${user}:${group}" \
   home=/home/${user}
 ENV DOCKER_PROJECT_ROOT=${home}/telepathy
-ENV \
-  PATH="${home}/bin:${PATH}" \
-  BACKEND=${DOCKER_PROJECT_ROOT}/backend \
-  CONFIG=${DOCKER_PROJECT_ROOT}/config \
-  FRONTEND=${DOCKER_PROJECT_ROOT}/frontend \
-  GENERATED=${DOCKER_PROJECT_ROOT}/generated \
-  PROTOS=${DOCKER_PROJECT_ROOT}/protos \
-  SCRIPTS=${DOCKER_PROJECT_ROOT}/scripts
+ENV PATH="${home}/bin:${PATH}"
 WORKDIR ${DOCKER_PROJECT_ROOT}
 
 FROM env as apt-production
 RUN apt-get -qqy update
 RUN apt-get -qqy --no-install-recommends install \
+  libcap2-bin \
   moreutils \
   sudo \
   && apt-get autoremove -y

@@ -36,17 +36,19 @@ export class Room {
     };
     if (complete.address === undefined) {
       throw new Error(`Address is missing in ${complete}`);
+    } else {
+      this.address = complete.address;
     }
     if (complete.name === undefined) {
       throw new Error(`Name is missing in ${complete}`);
+    } else {
+      this.name = complete.name;
     }
     if (complete.seq === undefined) {
       throw new Error(`Seq is missing in ${complete}`);
     }
-    this.address = complete.address;
     this.id = complete.id;
     this.messageIds = complete.messageIds;
-    this.name = complete.name;
     this.peerIds = complete.peerIds;
     this.seq = complete.seq;
   }
