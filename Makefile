@@ -23,5 +23,18 @@ commitlint:
 		telepathy/commitlint:latest \
 	;
 
+.PHONY: gcp
+gcp:
+	docker build \
+		--file Dockerfile.gcp \
+		--tag gcr.io/telepathy/gcp \
+		. \
+	;
+
+.PHONY: deploy
+deploy: gcp
+	docker push gcr.io/telepathy/gcp:latest
+	./scripts/gcloud compute instances reset telepathy
+
 .PHONY: travis
 travis: commitlint
