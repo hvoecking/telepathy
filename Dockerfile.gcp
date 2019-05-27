@@ -1,0 +1,22 @@
+FROM ubuntu:latest
+ENV WD=/app
+WORKDIR $WD
+ENV \
+  CADDY_DIST_URL=https://caddyserver.com/download/linux/amd64?plugins=http.cache,http.cors,http.ipfilter&license=personal \
+  CADDYPATH=/data/caddy \
+  PATH="$WD/bin:$PATH"
+RUN : \
+  && apt-get -qqy update \
+  && apt-get -qqy --no-install-recommends install \
+    ca-certificates \
+    curl \
+  && apt-get autoremove -y \
+  && mkdir -p ~/tmp \
+  && curl "$CADDY_DIST_URL" | tar xz -C ~/tmp/ \
+  && mv ~/tmp/caddy /usr/local/bin/ \
+  && rm -rf ~/tmp/* \
+;
+COPY README.md /app/telepathy.app/index.html
+COPY LICENSE.md /app/telepathy.app/license
+COPY gcp/bin/ bin/
+CMD start

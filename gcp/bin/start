@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+
+###
+# @license
+# Heye Vöcking All Rights Reserved.
+#
+# Use of this source code is governed by an MIT-style license that can be
+# found in the LICENSE file at https://telepathy.app/license
+##
+
+set -euo pipefail
+
+caddy_configure() {
+  mkdir -p "$CADDYPATH"
+
+  cat << EOF > "$CADDYPATH/Caddyfile"
+telepathy.app {
+  tls webmaster@telepathy.app
+  gzip
+  cors
+  cache
+  root $PWD/telepathy.app/
+}
+EOF
+}
+
+caddy_daemon() {
+  echo "starting caddy..."
+  /usr/local/bin/caddy \
+    -log stdout \
+    -agree=true \
+    -conf="$CADDYPATH/Caddyfile" \
+    -root=/var/tmp \
+  ;
+}
+
+main() {
+  caddy_configure
+  caddy_daemon
+}
+
+main
