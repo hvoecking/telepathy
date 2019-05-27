@@ -14,6 +14,13 @@ caddy_configure() {
   mkdir -p "$CADDYPATH"
 
   cat << EOF > "$CADDYPATH/Caddyfile"
+telepathy.app {
+  tls webmaster@telepathy.app
+  gzip
+  cors
+  cache
+  root $PWD/telepathy.app/
+}
 EOF
 }
 
