@@ -8,6 +8,7 @@
 # found in the LICENSE file at https://telepathy.app/license
 ##
 
+.PHONY: commitlint
 commitlint:
 	docker build \
 		--file Dockerfile.commitlint \
@@ -22,4 +23,5 @@ commitlint:
 		telepathy/commitlint:latest \
 	;
 
+.PHONY: travis
 travis: commitlint
