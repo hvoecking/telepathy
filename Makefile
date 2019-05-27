@@ -1,3 +1,5 @@
+#!make
+
 ###
 # @license
 # Heye Vöcking All Rights Reserved.
