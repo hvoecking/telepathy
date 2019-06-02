@@ -23,6 +23,29 @@ commitlint:
 		telepathy/commitlint:latest \
 	;
 
+.PHONY: deploy
+deploy:
+	true \
+  && SEMVER=$$(jq -r .version package.json) \
+  && DATE=$$(date -u +%Y%m%dT%H%M%S) \
+  && REV=$$(git rev-parse --short HEAD) \
+  && VERSION="v$$SEMVER~$$DATE.git$$REV" \
+	&& echo VERSION: $$VERSION \
+	&& docker build \
+		--build-arg VERSION=$$VERSION \
+		--file Dockerfile.deploy \
+		--tag telepathy/deploy \
+		. \
+	;
+	docker run \
+		--env IPFS_API_PASSWORD=$$IPFS_API_PASSWORD \
+		--env IPFS_API_USERNAME=$$IPFS_API_USERNAME \
+		--rm \
+		--user $$(id -u):$$(id -g) \
+		-i \
+		telepathy/deploy:latest \
+	;
+
 .PHONY: gcp
 gcp:
 	docker build \
@@ -30,11 +53,9 @@ gcp:
 		--tag gcr.io/telepathy/gcp \
 		. \
 	;
-
-.PHONY: deploy
-deploy: gcp
 	docker push gcr.io/telepathy/gcp:latest
 	./scripts/gcloud compute instances reset telepathy
+	while ! curl https://api.telepathy.app >/dev/null; do sleep 1; done
 
 .PHONY: travis
 travis: commitlint

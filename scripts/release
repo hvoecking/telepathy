@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+
+###
+# @license
+# Heye Vöcking All Rights Reserved.
+#
+# Use of this source code is governed by an MIT-style license that can be
+# found in the LICENSE file at https://telepathy.app/license
+##
+
+set -euo pipefail
+
+stash() {
+  if ! git stash | grep "^No local changes to save$" >/dev/null
+  then
+    trap "git stash pop" EXIT
+  fi
+}
+
+release() (
+  local BUILD_TYPE=${1:-}; shift || true
+
+  local REV=$(git rev-parse --short HEAD)
+  trap "git reset --hard $REV" ERR
+  standard-version
+  git push --follow-tags origin setup-cd
+)
+
+main() {
+  if [[ ${1:-} == --undo ]]
+  then
+    local TAG=$(
+      /usr/bin/git log --oneline \
+        | head -1 \
+        | sed -r 's/([0-9a-f]+ chore\(release\): ([^$]+)|.*())/v\2/' \
+      ;
+    )
+    if [[ $TAG == v ]]
+    then
+      echo "No release version found in head commit" >&2
+      exit 3
+    fi
+    stash
+    git reset --hard HEAD^
+    git tag -d "$TAG"
+    exit
+  fi
+
+  BUILD_TYPE=${1:-release}; shift || echo "Defaulting to build type '$BUILD_TYPE'"
+
+  if ! $(which standard-version >/dev/null)
+  then
+    echo "Need 'standard-version', install using 'npm i -g standard-version'" >&2
+    exit 1
+  fi
+
+  if [[ $BUILD_TYPE == release ]]
+  then
+    release
+  else
+    echo "Unrecognized build type '$BUILD_TYPE'" >&2
+    exit 2
+  fi
+}
+
+main $@

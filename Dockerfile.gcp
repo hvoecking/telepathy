@@ -1,8 +1,20 @@
-FROM ubuntu:latest
+###
+# @license
+# Heye Vöcking All Rights Reserved.
+#
+# Use of this source code is governed by an MIT-style license that can be
+# found in the LICENSE file at https://telepathy.app/license
+##
+
+FROM ipfs/go-ipfs:v0.4.20 AS ipfs
+
+FROM abiosoft/caddy:1.0.0 as caddy
+
+FROM ubuntu:18.04 AS dist
 ENV WD=/app
 WORKDIR $WD
 ENV \
-  CADDY_DIST_URL=https://caddyserver.com/download/linux/amd64?plugins=http.cache,http.cors,http.ipfilter&license=personal \
+  IPFS_PATH=/data/ipfs \
   CADDYPATH=/data/caddy \
   PATH="$WD/bin:$PATH"
 RUN : \
@@ -10,13 +22,18 @@ RUN : \
   && apt-get -qqy --no-install-recommends install \
     ca-certificates \
     curl \
+    gnupg \
+    jq \
+    lsb-release \
+    moreutils \
+  && echo "deb http://packages.cloud.google.com/apt gcsfuse-$(lsb_release -cs) main" | tee /etc/apt/sources.list.d/gcsfuse.list \
+  && curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - \
+  && apt-get -qqy update \
+  && apt-get -qqy --no-install-recommends install \
+    gcsfuse \
   && apt-get autoremove -y \
-  && mkdir -p ~/tmp \
-  && curl "$CADDY_DIST_URL" | tar xz -C ~/tmp/ \
-  && mv ~/tmp/caddy /usr/local/bin/ \
-  && rm -rf ~/tmp/* \
 ;
-COPY README.md /app/telepathy.app/index.html
-COPY LICENSE.md /app/telepathy.app/license
+COPY --from=ipfs /usr/local/bin/ipfs /usr/local/bin/ipfs
+COPY --from=caddy /usr/bin/caddy /usr/local/bin/
 COPY gcp/bin/ bin/
 CMD start
