@@ -19,6 +19,13 @@ RUN : \
   && apt-get -qqy --no-install-recommends install \
     ca-certificates \
     curl \
+    gnupg \
+    lsb-release \
+  && echo "deb http://packages.cloud.google.com/apt gcsfuse-$(lsb_release -cs) main" | tee /etc/apt/sources.list.d/gcsfuse.list \
+  && curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - \
+  && apt-get -qqy update \
+  && apt-get -qqy --no-install-recommends install \
+    gcsfuse \
   && apt-get autoremove -y \
 ;
 COPY README.md /app/telepathy.app/index.html

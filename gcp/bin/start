@@ -10,8 +10,19 @@
 
 set -euo pipefail
 
+fusemount() {
+  local BUCKET=$1; shift
+  local MOUNT_POINT=$1; shift
+  if mount | grep "$BUCKET on $MOUNT_POINT type fuse" >/dev/null
+  then
+    return
+  fi
+  mkdir -p "$MOUNT_POINT"
+  gcsfuse "$BUCKET" "$MOUNT_POINT"
+}
+
 caddy_configure() {
-  mkdir -p "$CADDYPATH"
+  fusemount acme.caddy.telepathy.app "$CADDYPATH/acme"
 
   cat << EOF > "$CADDYPATH/Caddyfile"
 telepathy.app {
