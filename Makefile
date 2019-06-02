@@ -52,6 +52,7 @@ deploy:
 		--env IPFS_API_USERNAME=$$IPFS_API_USERNAME \
 		--rm \
 		--user $$(id -u):$$(id -g) \
+		-i \
 		telepathy/deploy:latest \
 	;
 
