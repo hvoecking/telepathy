@@ -58,4 +58,4 @@ gcp:
 	while ! curl https://api.telepathy.app >/dev/null; do sleep 1; done
 
 .PHONY: travis
-travis: commitlint deploy
+travis: commitlint

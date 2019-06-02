@@ -13,4 +13,6 @@ addons:
 language: bash
 services:
   - docker
-script: make travis
+script:
+  - make travis
+  - if [ -n "$TRAVIS_TAG" ]; then make deploy; fi
