@@ -16,6 +16,7 @@ commitlint:
 		-<Dockerfile.commitlint \
 	;
 	docker run \
+		--name telepathy-commitlint \
 		--rm \
 		--user $$(id -u):$$(id -g) \
 		--volume $$PWD/.git:/app/.git/ \
@@ -40,6 +41,7 @@ deploy:
 	docker run \
 		--env IPFS_API_PASSWORD=$$IPFS_API_PASSWORD \
 		--env IPFS_API_USERNAME=$$IPFS_API_USERNAME \
+		--name telepathy-deploy \
 		--rm \
 		--user $$(id -u):$$(id -g) \
 		-i \
