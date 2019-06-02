@@ -41,7 +41,8 @@ main() {
   ipfs_daemon
 
   ipfs swarm connect /dnsaddr/swarm.telepathy.app
-  ipfs_publish build telepathy.app
+  local BUILD_TYPE=$(sed -r 's/[^-]+(-([^\.]+\.)|()).*/\2/' <<<$VERSION)
+  ipfs_publish build "${BUILD_TYPE}telepathy.app"
 }
 
 main

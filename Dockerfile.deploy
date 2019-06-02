@@ -31,5 +31,6 @@ RUN : \
 COPY LICENSE.md /app/build/license
 COPY README.md /app/build/index.html
 ARG VERSION=UNSET
+ENV VERSION=$VERSION
 RUN sed -i "s/<\!-- %%VERSION%% -->/$VERSION/" /app/build/index.html
 CMD deploy
