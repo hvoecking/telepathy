@@ -9,8 +9,14 @@
 FROM node:12-stretch AS build
 ENV WD=/app
 WORKDIR $WD
-COPY LICENSE.md /app/build/license
-COPY README.md /app/build/index.html
+COPY exchange-files-in-browser frontend
+RUN : \
+  && cd frontend \
+  && npm i \
+  && npm cache clean --force \
+  && npm run bundle \
+  && cp -r public /app/build \
+;
 ARG VERSION=UNSET
 ENV VERSION=$VERSION
 RUN : \
