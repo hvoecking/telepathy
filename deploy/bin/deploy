@@ -11,8 +11,11 @@
 set -euo pipefail
 
 ipfs_daemon() {
-  /usr/local/bin/ipfs daemon &
-  sleep 10
+  (ipfs daemon | tee /tmp/ipfs.out) &
+  while ! grep -q "^Daemon is ready$" /tmp/ipfs.out
+  do
+    sleep 1
+  done
 }
 
 ipfs_api() {

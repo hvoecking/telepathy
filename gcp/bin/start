@@ -38,12 +38,18 @@ ipfs_configure() {
 }
 
 ipfs_daemon() {
-  /usr/local/bin/ipfs daemon \
-    --enable-namesys-pubsub \
-    --enable-gc \
-    --enable-pubsub-experiment \
-  &
-  sleep 10
+  (
+    /usr/local/bin/ipfs daemon \
+      --enable-namesys-pubsub \
+      --enable-gc \
+      --enable-pubsub-experiment \
+      | tee /var/log/ipfs.log \
+    ;
+  ) &
+  while ! grep -q "^Daemon is ready$" /var/log/ipfs.log
+  do
+    sleep 1
+  done
 }
 
 key_name_to_id() {
@@ -134,12 +140,18 @@ EOF
 
 caddy_daemon() {
   echo "starting caddy..."
-  /usr/local/bin/caddy \
-    -log stdout \
-    -agree=true \
-    -conf="$CADDYPATH/Caddyfile" \
-  &
-  sleep 2
+  (
+    /usr/local/bin/caddy \
+      -log stdout \
+      -agree=true \
+      -conf="$CADDYPATH/Caddyfile" \
+      | tee /var/log/caddy.log \
+    ;
+  ) &
+  while ! grep -q "^done.$" /var/log/caddy.log
+  do
+    sleep 1
+  done
 }
 
 main() {
