@@ -9,7 +9,7 @@
       width="125"
     ></a>
   <br>
-  Telepathy
+  Telepathy <!-- %%VERSION%% -->
   <br>
 </h1>
 

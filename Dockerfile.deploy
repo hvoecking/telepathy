@@ -22,12 +22,14 @@ RUN : \
   && apt-get autoremove -y \
 ;
 COPY --from=ipfs /usr/local/bin/ipfs /usr/local/bin/ipfs
-COPY README.md /app/telepathy.app/index.html
-COPY LICENSE.md /app/telepathy.app/license
 COPY deploy/bin bin/
 ENV PATH="$WD/bin:$PATH"
 RUN : \
   && mkdir -p "$IPFS_PATH" \
   && chmod 777 -R "$IPFS_PATH" \
 ;
+COPY LICENSE.md /app/build/license
+COPY README.md /app/build/index.html
+ARG VERSION=UNSET
+RUN sed -i "s/<\!-- %%VERSION%% -->/$VERSION/" /app/build/index.html
 CMD deploy

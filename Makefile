@@ -35,7 +35,14 @@ gcp:
 
 .PHONY: deploy
 deploy:
-	docker build \
+	true \
+  && SEMVER=$$(jq -r .version package.json) \
+  && DATE=$$(date -u +%Y%m%dT%H%M%S) \
+  && REV=$$(git rev-parse --short HEAD) \
+  && VERSION="v$$SEMVER~$$DATE.git$$REV" \
+	&& echo VERSION: $$VERSION \
+	&& docker build \
+		--build-arg VERSION=$$VERSION \
 		--file Dockerfile.deploy \
 		--tag telepathy/deploy \
 		. \

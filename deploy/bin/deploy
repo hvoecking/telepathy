@@ -45,7 +45,7 @@ main() {
   ipfs_daemon
 
   ipfs_connect
-  ipfs_publish telepathy.app telepathy.app
+  ipfs_publish build telepathy.app
 }
 
 main
