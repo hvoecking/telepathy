@@ -6,11 +6,12 @@
 # found in the LICENSE file at https://telepathy.app/license
 ##
 
+FROM abiosoft/caddy:1.0.0 as caddy
+
 FROM ubuntu:18.04 AS dist
 ENV WD=/app
 WORKDIR $WD
 ENV \
-  CADDY_DIST_URL=https://caddyserver.com/download/linux/amd64?plugins=http.cache,http.cors,http.ipfilter&license=personal \
   CADDYPATH=/data/caddy \
   PATH="$WD/bin:$PATH"
 RUN : \
@@ -19,12 +20,9 @@ RUN : \
     ca-certificates \
     curl \
   && apt-get autoremove -y \
-  && mkdir -p ~/tmp \
-  && curl "$CADDY_DIST_URL" | tar xz -C ~/tmp/ \
-  && mv ~/tmp/caddy /usr/local/bin/ \
-  && rm -rf ~/tmp/* \
 ;
 COPY README.md /app/telepathy.app/index.html
 COPY LICENSE.md /app/telepathy.app/license
+COPY --from=caddy /usr/bin/caddy /usr/local/bin/
 COPY gcp/bin/ bin/
 CMD start
