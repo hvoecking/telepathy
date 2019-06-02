@@ -10,10 +10,6 @@
 
 set -euo pipefail
 
-ipfs_configure() {
-  ipfs init
-}
-
 ipfs_daemon() {
   /usr/local/bin/ipfs daemon &
   sleep 10
@@ -22,11 +18,6 @@ ipfs_daemon() {
 ipfs_api() {
   local URI=$1; shift
   curl "https://$IPFS_API_USERNAME:$IPFS_API_PASSWORD@api.telepathy.app/api/v0/$URI"
-}
-
-ipfs_connect() {
-  ipfs_api config/show | jq -r .Identity.PeerID
-  ipfs swarm connect /ip4/35.207.95.128/tcp/4001/ipfs/QmVhiPtrWbramWeCP5nxkf3dur18qtUe38ZWyo83gqV92f
 }
 
 ipfs_publish() {
@@ -41,10 +32,10 @@ ipfs_publish() {
 }
 
 main() {
-  ipfs_configure
+  ipfs init
   ipfs_daemon
 
-  ipfs_connect
+  ipfs swarm connect /ip4/35.207.95.128/tcp/4001/ipfs/QmVhiPtrWbramWeCP5nxkf3dur18qtUe38ZWyo83gqV92f
   ipfs_publish build telepathy.app
 }
 
