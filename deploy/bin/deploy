@@ -32,6 +32,8 @@ ipfs_publish() {
   )
   ipfs_api "pin/add?arg=$HASH"
   ipfs_api "name/publish?arg=$HASH&key=$DOMAIN"
+
+  diff build/index.html <(curl https://telepathy.app)
 }
 
 main() {
