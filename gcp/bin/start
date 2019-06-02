@@ -138,7 +138,6 @@ caddy_daemon() {
     -log stdout \
     -agree=true \
     -conf="$CADDYPATH/Caddyfile" \
-    -root=/var/tmp \
   &
   sleep 2
 }
