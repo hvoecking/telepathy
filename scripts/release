@@ -21,7 +21,7 @@ release() (
   local REV=$(git rev-parse --short HEAD)
   trap "git reset --hard $REV" ERR
   standard-version $@
-  git push --follow-tags origin setup-cd
+  git push --follow-tags origin
 )
 
 main() {
