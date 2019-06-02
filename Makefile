@@ -33,5 +33,20 @@ gcp:
 	docker push gcr.io/telepathy/gcp:latest
 	./scripts/gcloud compute instances reset telepathy
 
+.PHONY: deploy
+deploy:
+	docker build \
+		--file Dockerfile.deploy \
+		--tag telepathy/deploy \
+		. \
+	;
+	docker run \
+		--env IPFS_API_PASSWORD=$$IPFS_API_PASSWORD \
+		--env IPFS_API_USERNAME=$$IPFS_API_USERNAME \
+		--rm \
+		--user $$(id -u):$$(id -g) \
+		telepathy/deploy:latest \
+	;
+
 .PHONY: travis
-travis: commitlint
+travis: commitlint deploy

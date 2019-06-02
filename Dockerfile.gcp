@@ -6,12 +6,15 @@
 # found in the LICENSE file at https://telepathy.app/license
 ##
 
+FROM ipfs/go-ipfs:v0.4.20 AS ipfs
+
 FROM abiosoft/caddy:1.0.0 as caddy
 
 FROM ubuntu:18.04 AS dist
 ENV WD=/app
 WORKDIR $WD
 ENV \
+  IPFS_PATH=/data/ipfs \
   CADDYPATH=/data/caddy \
   PATH="$WD/bin:$PATH"
 RUN : \
@@ -20,7 +23,9 @@ RUN : \
     ca-certificates \
     curl \
     gnupg \
+    jq \
     lsb-release \
+    moreutils \
   && echo "deb http://packages.cloud.google.com/apt gcsfuse-$(lsb_release -cs) main" | tee /etc/apt/sources.list.d/gcsfuse.list \
   && curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - \
   && apt-get -qqy update \
@@ -28,8 +33,7 @@ RUN : \
     gcsfuse \
   && apt-get autoremove -y \
 ;
-COPY README.md /app/telepathy.app/index.html
-COPY LICENSE.md /app/telepathy.app/license
+COPY --from=ipfs /usr/local/bin/ipfs /usr/local/bin/ipfs
 COPY --from=caddy /usr/bin/caddy /usr/local/bin/
 COPY gcp/bin/ bin/
 CMD start

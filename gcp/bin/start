@@ -10,6 +10,11 @@
 
 set -euo pipefail
 
+SITES="telepathy.app"
+CONFIG_PATH="/data/config"
+CONFIG_ENV_PATH="$CONFIG_PATH/env/.env"
+CONFIG_IPFS_PATH="$CONFIG_PATH/ipfs/config"
+
 fusemount() {
   local BUCKET=$1; shift
   local MOUNT_POINT=$1; shift
@@ -21,16 +26,108 @@ fusemount() {
   gcsfuse "$BUCKET" "$MOUNT_POINT"
 }
 
+ipfs_configure() {
+  fusemount keystore.ipfs.telepathy.app "$IPFS_PATH/keystore"
+
+  fusemount ipfs.config.telepathy.app "$(dirname "$CONFIG_IPFS_PATH")"
+  ipfs init
+  rm "$IPFS_PATH/config"
+  ln -s "$CONFIG_IPFS_PATH" "$IPFS_PATH/config"
+  ipfs config show
+  echo
+}
+
+ipfs_daemon() {
+  /usr/local/bin/ipfs daemon \
+    --enable-namesys-pubsub \
+    --enable-gc \
+    --enable-pubsub-experiment \
+  &
+  sleep 10
+}
+
+key_name_to_id() {
+  local NAME=$1; shift
+  curl -s "localhost:5001/api/v0/key/list?arg=l" \
+    | jq -r '.[][] | select(.Name == "'$NAME'") | .Id' \
+  ;
+}
+
+resolve_name() {
+  local NAME=$1; shift
+  local ID=$(key_name_to_id $NAME)
+  curl -s "localhost:5001/api/v0/name/resolve?arg=$ID&dht-timeout=1s" \
+    | jq -r .Path \
+  ;
+}
+
 caddy_configure() {
   fusemount acme.caddy.telepathy.app "$CADDYPATH/acme"
 
+  local $(grep IPFS_API_USERNAME "$CONFIG_ENV_PATH")
+  local $(grep IPFS_API_PASSWORD "$CONFIG_ENV_PATH")
+
+  local TLS_OPTS='tls webmaster@telepathy.app'
+  local DEFAULT_OPTS='
+    gzip
+    cors
+    cache
+  '
+
+  print_site_config() {
+    local SITE=$1; shift
+    cat << EOF
+https://$SITE {
+  $TLS_OPTS
+  $DEFAULT_OPTS
+  proxy / http://localhost:8080/ {
+    transparent
+  }
+}
+EOF
+  }
+
   cat << EOF > "$CADDYPATH/Caddyfile"
-telepathy.app {
-  tls webmaster@telepathy.app
-  gzip
-  cors
-  cache
-  root $PWD/telepathy.app/
+$(
+  for SITE in $SITES
+  do
+    print_site_config $SITE
+  done
+)
+https://gateway.telepathy.app {
+  $TLS_OPTS
+  $DEFAULT_OPTS
+  proxy / http://localhost:8080/ {
+    transparent
+  }
+}
+https://relay.telepathy.app {
+  $TLS_OPTS
+  proxy / http://localhost:8081/ {
+    websocket
+  }
+}
+https://swarm.telepathy.app {
+  $TLS_OPTS
+  proxy / http://localhost:4001/ {
+    transparent
+  }
+}
+http://swarm.telepathy.app {
+  proxy / http://localhost:4001/ {
+    transparent
+  }
+}
+https://api.telepathy.app {
+  $TLS_OPTS
+  $DEFAULT_OPTS
+  basicauth "$IPFS_API_USERNAME" "$IPFS_API_PASSWORD" {
+    realm ipfs-api
+    /
+  }
+  proxy / http://localhost:5001/ {
+    transparent
+  }
 }
 EOF
 }
@@ -42,12 +139,43 @@ caddy_daemon() {
     -agree=true \
     -conf="$CADDYPATH/Caddyfile" \
     -root=/var/tmp \
-  ;
+  &
+  sleep 2
 }
 
 main() {
+  fusemount env.config.telepathy.app $(dirname "$CONFIG_ENV_PATH")
+
+  ipfs_configure
+  ipfs_daemon
+
   caddy_configure
   caddy_daemon
+
+  while true
+  do
+    # Check for ipfs
+    if ! ps awux | grep [/]usr/local/bin/ipfs > /dev/null
+    then
+      echo "ipfs not running, closing..."
+      break
+    fi
+
+    # Check for caddy
+    if ! ps awux | grep [/]usr/local/bin/caddy > /dev/null
+    then
+      echo "caddy not running, closing..."
+      break
+    fi
+
+    # Keep the cache fresh therefore resolve on a constant basis
+    for SITE in $SITES
+    do
+      resolve_name $SITE
+    done
+
+    sleep 2
+  done
 }
 
 main
