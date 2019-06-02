@@ -38,7 +38,7 @@ main() {
   ipfs init
   ipfs_daemon
 
-  ipfs swarm connect /ip4/35.207.95.128/tcp/4001/ipfs/QmVhiPtrWbramWeCP5nxkf3dur18qtUe38ZWyo83gqV92f
+  ipfs swarm connect /dnsaddr/swarm.telepathy.app
   ipfs_publish build telepathy.app
 }
 
