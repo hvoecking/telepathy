@@ -1,5 +1,11 @@
+# Exclude everything...
 **/*
+
+# ... except these selected files and folders...
 !/gcp/
 !/README.md
 !/LICENSE.md
 !/deploy/
+
+# ... but always exclude all node_modules
+**/node_modules/
