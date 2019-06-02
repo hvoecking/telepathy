@@ -28,9 +28,5 @@ RUN : \
   && mkdir -p "$IPFS_PATH" \
   && chmod 777 -R "$IPFS_PATH" \
 ;
-COPY LICENSE.md /app/build/license
-COPY README.md /app/build/index.html
-ARG VERSION=UNSET
-ENV VERSION=$VERSION
-RUN sed -i "s/<\!-- %%VERSION%% -->/$VERSION/" /app/build/index.html
+COPY --from=telepathy/build:latest /app/build /app/build
 CMD deploy

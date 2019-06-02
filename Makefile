@@ -8,6 +8,21 @@
 # found in the LICENSE file at https://telepathy.app/license
 ##
 
+.PHONY: build
+build:
+	true \
+	&& SEMVER=$$(jq -r .version package.json) \
+	&& DATE=$$(date -u +%Y%m%dT%H%M%S) \
+	&& REV=$$(git rev-parse --short HEAD) \
+	&& VERSION="v$$SEMVER~$$DATE.git$$REV" \
+	&& echo VERSION: $$VERSION \
+	&& docker build \
+		--build-arg VERSION=$$VERSION \
+		--file Dockerfile.build \
+		--tag telepathy/build \
+		. \
+	;
+
 .PHONY: commitlint
 commitlint:
 	docker build \
@@ -25,15 +40,8 @@ commitlint:
 	;
 
 .PHONY: deploy
-deploy:
-	true \
-  && SEMVER=$$(jq -r .version package.json) \
-  && DATE=$$(date -u +%Y%m%dT%H%M%S) \
-  && REV=$$(git rev-parse --short HEAD) \
-  && VERSION="v$$SEMVER~$$DATE.git$$REV" \
-	&& echo VERSION: $$VERSION \
-	&& docker build \
-		--build-arg VERSION=$$VERSION \
+deploy: build
+	docker build \
 		--file Dockerfile.deploy \
 		--tag telepathy/deploy \
 		. \
