@@ -41,6 +41,7 @@ main() {
     stash
     git reset --hard HEAD^
     git tag -d "$TAG"
+    git push --delete origin "$TAG"
     exit
   fi
 
