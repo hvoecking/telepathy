@@ -10,7 +10,9 @@ FROM node:10-alpine
 RUN : \
   && apk update \
   && apk upgrade \
-  && apk add --no-cache bash git \
+  && apk add --no-cache \
+    bash \
+    git \
 ;
 RUN npm i -g @commitlint/cli @commitlint/config-conventional
 WORKDIR /app
