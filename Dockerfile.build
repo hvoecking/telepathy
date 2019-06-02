@@ -1,0 +1,19 @@
+###
+# @license
+# Heye Vöcking All Rights Reserved.
+#
+# Use of this source code is governed by an MIT-style license that can be
+# found in the LICENSE file at https://telepathy.app/license
+##
+
+FROM node:12-stretch AS build
+ENV WD=/app
+WORKDIR $WD
+COPY LICENSE.md /app/build/license
+COPY README.md /app/build/index.html
+ARG VERSION=UNSET
+ENV VERSION=$VERSION
+RUN : \
+  && sed -i "s/<\!-- %%VERSION%% -->/$VERSION/" build/index.html \
+  && echo $VERSION > build/VERSION.md \
+;

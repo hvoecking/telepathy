@@ -33,5 +33,8 @@ fi
 docker exec \
   -it \
   "$NAME" \
-  gcloud --project=telepathy $@ \
+  gcloud \
+    $@ \
+    --project telepathy \
+    --zone europe-west3-c \
 ;

@@ -33,7 +33,7 @@ ipfs_publish() {
   ipfs_api "pin/add?arg=$HASH"
   ipfs_api "name/publish?arg=$HASH&key=$DOMAIN"
 
-  diff build/index.html <(curl https://telepathy.app)
+  diff build/index.html <(curl "https://$DOMAIN")
 }
 
 main() {
@@ -41,7 +41,7 @@ main() {
   ipfs_daemon
 
   ipfs swarm connect /dnsaddr/swarm.telepathy.app
-  local BUILD_TYPE=$(sed -r 's/[^-]+(-([^\.]+\.)|()).*/\2/' <<<$VERSION)
+  local BUILD_TYPE=$(sed -r 's/[^-]+(-([^\.]+\.)|()).*/\2/' <build/VERSION.md)
   ipfs_publish build "${BUILD_TYPE}telepathy.app"
 }
 

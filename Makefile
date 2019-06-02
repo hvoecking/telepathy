@@ -8,6 +8,21 @@
 # found in the LICENSE file at https://telepathy.app/license
 ##
 
+.PHONY: build
+build:
+	true \
+	&& SEMVER=$$(jq -r .version package.json) \
+	&& DATE=$$(date -u +%Y%m%dT%H%M%S) \
+	&& REV=$$(git rev-parse --short HEAD) \
+	&& VERSION="v$$SEMVER~$$DATE.git$$REV" \
+	&& echo VERSION: $$VERSION \
+	&& docker build \
+		--build-arg VERSION=$$VERSION \
+		--file Dockerfile.build \
+		--tag telepathy/build \
+		. \
+	;
+
 .PHONY: commitlint
 commitlint:
 	docker build \
@@ -16,6 +31,7 @@ commitlint:
 		-<Dockerfile.commitlint \
 	;
 	docker run \
+		--name telepathy-commitlint \
 		--rm \
 		--user $$(id -u):$$(id -g) \
 		--volume $$PWD/.git:/app/.git/ \
@@ -24,15 +40,8 @@ commitlint:
 	;
 
 .PHONY: deploy
-deploy:
-	true \
-  && SEMVER=$$(jq -r .version package.json) \
-  && DATE=$$(date -u +%Y%m%dT%H%M%S) \
-  && REV=$$(git rev-parse --short HEAD) \
-  && VERSION="v$$SEMVER~$$DATE.git$$REV" \
-	&& echo VERSION: $$VERSION \
-	&& docker build \
-		--build-arg VERSION=$$VERSION \
+deploy: build
+	docker build \
 		--file Dockerfile.deploy \
 		--tag telepathy/deploy \
 		. \
@@ -40,6 +49,7 @@ deploy:
 	docker run \
 		--env IPFS_API_PASSWORD=$$IPFS_API_PASSWORD \
 		--env IPFS_API_USERNAME=$$IPFS_API_USERNAME \
+		--name telepathy-deploy \
 		--rm \
 		--user $$(id -u):$$(id -g) \
 		-i \
