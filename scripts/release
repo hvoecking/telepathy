@@ -18,11 +18,9 @@ stash() {
 }
 
 release() (
-  local BUILD_TYPE=${1:-}; shift || true
-
   local REV=$(git rev-parse --short HEAD)
   trap "git reset --hard $REV" ERR
-  standard-version
+  standard-version $@
   git push --follow-tags origin setup-cd
 )
 
@@ -57,6 +55,9 @@ main() {
   if [[ $BUILD_TYPE == release ]]
   then
     release
+  elif [[ $BUILD_TYPE == snap ]]
+  then
+    release --prerelease snap
   else
     echo "Unrecognized build type '$BUILD_TYPE'" >&2
     exit 2

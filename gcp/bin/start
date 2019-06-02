@@ -10,7 +10,7 @@
 
 set -euo pipefail
 
-SITES="telepathy.app"
+SITES="telepathy.app snap.telepathy.app"
 CONFIG_PATH="/data/config"
 CONFIG_ENV_PATH="$CONFIG_PATH/env/.env"
 CONFIG_IPFS_PATH="$CONFIG_PATH/ipfs/config"
