@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.2.1-snap.0](https://github.com/hvoecking/telepathy/compare/v0.2.0...v0.2.1-snap.0) (2019-06-02)
+
+
+### Build System
+
+* add 'snap' build type ([14715dc](https://github.com/hvoecking/telepathy/commit/14715dc))
+* add names for docker containers ([8823cd5](https://github.com/hvoecking/telepathy/commit/8823cd5))
+* extract 'build' target ([1ed75e8](https://github.com/hvoecking/telepathy/commit/1ed75e8))
+* hardcode gcloud zone ([d4cbe75](https://github.com/hvoecking/telepathy/commit/d4cbe75))
+* **release:** delete remote tag on undo ([aa632f6](https://github.com/hvoecking/telepathy/commit/aa632f6))
+* **release:** remove branch name 'setup-cd' ([92a04c4](https://github.com/hvoecking/telepathy/commit/92a04c4))
+
+
+
 ## [0.2.0](https://github.com/hvoecking/telepathy/compare/v0.1.0...v0.2.0) (2019-06-02)
 
 
