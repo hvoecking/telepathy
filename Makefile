@@ -23,17 +23,6 @@ commitlint:
 		telepathy/commitlint:latest \
 	;
 
-.PHONY: gcp
-gcp:
-	docker build \
-		--file Dockerfile.gcp \
-		--tag gcr.io/telepathy/gcp \
-		. \
-	;
-	docker push gcr.io/telepathy/gcp:latest
-	./scripts/gcloud compute instances reset telepathy
-	while ! curl https://api.telepathy.app >/dev/null; do sleep 1; done
-
 .PHONY: deploy
 deploy:
 	true \
@@ -56,6 +45,17 @@ deploy:
 		-i \
 		telepathy/deploy:latest \
 	;
+
+.PHONY: gcp
+gcp:
+	docker build \
+		--file Dockerfile.gcp \
+		--tag gcr.io/telepathy/gcp \
+		. \
+	;
+	docker push gcr.io/telepathy/gcp:latest
+	./scripts/gcloud compute instances reset telepathy
+	while ! curl https://api.telepathy.app >/dev/null; do sleep 1; done
 
 .PHONY: travis
 travis: commitlint deploy
