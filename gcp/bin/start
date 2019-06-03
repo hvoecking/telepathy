@@ -42,19 +42,22 @@ ipfs_configure() {
   read_bucket ipfs.telepathy.app "$IPFS_PATH/config"
 }
 
-ipfs_daemon() {
-  (
-    /usr/local/bin/ipfs daemon \
-      --enable-namesys-pubsub \
-      --enable-gc \
-      --enable-pubsub-experiment \
-      | tee /var/log/ipfs.log \
-    ;
-  ) &
-  while ! grep -q "^Daemon is ready$" /var/log/ipfs.log
+start_wait() {
+  local FN_NAME=$1; shift
+  local PATTERN=$1; shift
+  ($FN_NAME | tee "/var/log/$FN_NAME.log") &
+  while ! grep -q "$PATTERN" "/var/log/$FN_NAME.log"
   do
     sleep 1
   done
+}
+
+ipfs_daemon() {
+  /usr/local/bin/ipfs daemon \
+    --enable-namesys-pubsub \
+    --enable-gc \
+    --enable-pubsub-experiment \
+  ;
 }
 
 key_name_to_id() {
@@ -78,27 +81,19 @@ caddy_configure() {
 }
 
 caddy_daemon() {
-  echo "starting caddy..."
-  (
-    /usr/local/bin/caddy \
-      -log stdout \
-      -agree=true \
-      -conf="$CADDYPATH/Caddyfile" \
-      | tee /var/log/caddy.log \
-    ;
-  ) &
-  while ! grep -q "^done.$" /var/log/caddy.log
-  do
-    sleep 1
-  done
+  /usr/local/bin/caddy \
+    -log stdout \
+    -agree=true \
+    -conf="$CADDYPATH/Caddyfile" \
+  ;
 }
 
 main() {
   ipfs_configure
-  ipfs_daemon
+  start_wait ipfs_daemon "^Daemon is ready$"
 
   caddy_configure
-  caddy_daemon
+  start_wait caddy_daemon "^done.$"
 
   while true
   do
