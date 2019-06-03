@@ -10,14 +10,11 @@
 
 .PHONY: build
 build:
-	true \
-	&& SEMVER=$$(jq -r .version package.json) \
-	&& DATE=$$(date -u +%Y%m%dT%H%M%S) \
-	&& REV=$$(git rev-parse --short HEAD) \
-	&& VERSION="v$$SEMVER~$$DATE.git$$REV" \
-	&& echo VERSION: $$VERSION \
-	&& docker build \
-		--build-arg VERSION=$$VERSION \
+	SEMVER=$$(jq -r .version package.json); \
+	DATE=$$(date -u +%Y%m%dT%H%M%S); \
+	REV=$$(git rev-parse --short HEAD); \
+	docker build \
+		--build-arg VERSION="v$$SEMVER~$$DATE.git$$REV" \
 		--file Dockerfile.build \
 		--tag telepathy/build \
 		. \
@@ -64,8 +61,14 @@ gcp:
 		. \
 	;
 	docker push gcr.io/telepathy/gcp:latest
-	./scripts/gcloud compute instances reset telepathy
-	while ! curl https://api.telepathy.app >/dev/null; do sleep 1; done
+	if gcloud compute instances reset telepathy | grep "is not ready"; \
+	then \
+		gcloud compute instances start telepathy; \
+	fi
+	while ! curl https://api.telepathy.app >/dev/null; \
+	do \
+		sleep 3; \
+	done
 
 .PHONY: travis
 travis: commitlint

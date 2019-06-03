@@ -1,0 +1,3 @@
+**/node_modules/
+/exchange-files-in-browser/public/bundle.js
+/buckets
