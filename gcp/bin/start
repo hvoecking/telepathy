@@ -32,6 +32,14 @@ read_bucket() {
   cp -rf "$MOUNT_POINT/$(basename "$TARGET")" $(dirname "$TARGET")
 }
 
+write_bucket() {
+  local BUCKET=$1; shift
+  local SOURCE=$1; shift
+
+  local MOUNT_POINT="/mnt/buckets/$BUCKET"
+  cp -rf "$SOURCE" "$MOUNT_POINT/"
+}
+
 ipfs_configure() {
   if [ ! -d "$IPFS_PATH" ]
   then
@@ -77,6 +85,8 @@ resolve_name() {
 
 caddy_configure() {
   read_bucket caddy.telepathy.app "$CADDYPATH/acme"
+  trap 'write_bucket caddy.telepathy.app "$CADDYPATH/acme"' EXIT
+
   read_bucket caddy.telepathy.app "$CADDYPATH/Caddyfile"
 }
 
