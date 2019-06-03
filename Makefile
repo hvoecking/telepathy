@@ -67,7 +67,7 @@ gcp:
 	fi
 	while ! curl https://api.telepathy.app >/dev/null; \
 	do \
-		sleep 1; \
+		sleep 3; \
 	done
 
 .PHONY: travis
