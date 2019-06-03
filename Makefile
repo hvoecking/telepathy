@@ -62,7 +62,10 @@ gcp:
 	;
 	docker push gcr.io/telepathy/gcp:latest
 	gcloud compute instances reset telepathy
-	while ! curl https://api.telepathy.app >/dev/null; do sleep 1; done
+	while ! curl https://api.telepathy.app >/dev/null; \
+	do \
+		sleep 1; \
+	done
 
 .PHONY: travis
 travis: commitlint
