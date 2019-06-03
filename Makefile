@@ -61,7 +61,10 @@ gcp:
 		. \
 	;
 	docker push gcr.io/telepathy/gcp:latest
-	gcloud compute instances reset telepathy
+	if gcloud compute instances reset telepathy | grep "is not ready"; \
+	then \
+		gcloud compute instances start telepathy; \
+	fi
 	while ! curl https://api.telepathy.app >/dev/null; \
 	do \
 		sleep 1; \
