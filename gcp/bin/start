@@ -114,7 +114,7 @@ main() {
     # Keep the cache fresh therefore resolve on a constant basis
     for SITE in $SITES
     do
-      resolve_name $SITE
+      resolve_name "$SITE"
     done
 
     sleep 2
