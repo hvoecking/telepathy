@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+###
+# @license
+# Heye Vöcking All Rights Reserved.
+#
+# Use of this source code is governed by an MIT-style license that can be
+# found in the LICENSE file at https://telepathy.app/license
+##
+
+set -euo pipefail
+
+NAME=gcloud-config
+
+is_running() {
+  docker inspect -f '{{.State.Running}}' "$NAME"
+}
+
+if ! docker inspect "$NAME" 2>&1 >/dev/null
+then
+  mkdir -p /tmp/gcloud-config/.config
+  mkdir -p /tmp/gcloud-config/.gsutil
+  docker run \
+    --name "$NAME" \
+    --volume "$PWD/buckets:/mnt/buckets" \
+    --volume "/tmp/gcloud-config/.config:/.config" \
+    --volume "/tmp/gcloud-config/.gsutil:/.gsutil" \
+    -it \
+    -d \
+    --user $(id -u) \
+    google/cloud-sdk:alpine \
+  ;
+fi
+
+if [[ $(is_running) != true ]]
+then
+  docker start "$NAME"
+fi
